@@ -1,4 +1,4 @@
-import { DashboardTable } from './DashboardTable';
+import { GanttTable } from './GanttTable';
 
 export function DashboardLayout() {
   return (
@@ -9,7 +9,7 @@ export function DashboardLayout() {
         Overflow-auto allows independent horizontal/vertical scrolling for the table.
       */}
       <aside className="w-[400px] lg:w-[500px] flex-shrink-0 h-full overflow-auto border-r z-10 bg-card">
-        <DashboardTable />
+        <GanttTable />
       </aside>
 
       {/* 

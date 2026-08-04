@@ -17,7 +17,7 @@ export function DashboardTable() {
             <tr key={task.id} className="border-b last:border-0 hover:bg-gray-50">
               <td className="py-2">{task.title}</td>
               <td className="py-2">{task.assignee || 'Unassigned'}</td>
-              <td className="py-2 capitalize">{task.status.replace('-', ' ')}</td>
+              <td className="py-2 capitalize">{task.progress.toString().concat('%')}</td>
             </tr>
           ))}
         </tbody>
