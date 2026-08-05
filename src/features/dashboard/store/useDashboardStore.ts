@@ -54,7 +54,7 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
 
   collapseAll: () => set(() => ({ expandedIds: {} })),
 
-  setIsLoading: (isLoading) => set(() => ({ isLoading })),
+  setIsLoading: (isLoading) => set(() => ({ isLoading })), //Useful when swapping mock data for a real API call later.
 }));
 
 // Selectors

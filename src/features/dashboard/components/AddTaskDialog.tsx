@@ -1,8 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -23,6 +22,15 @@ import { useDashboardStore } from '../store/useDashboardStore';
 interface AddTaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+}
+
+function RequiredLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <Label>
+      {children}
+      <span className="text-red-500 ml-0.5">*</span>
+    </Label>
+  );
 }
 
 export function AddTaskDialog({
@@ -46,20 +54,12 @@ export function AddTaskDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Add New Task</DialogTitle>
-
-          <DialogDescription>
-            This dialog is displayed for demonstration purposes only.
-            Task creation will be available in Phase 2.
-          </DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-5 py-4">
-          {/* Task Name */}
+          {/* Task Name - MANDATORY */}
           <div className="space-y-2 col-span-2">
-            <Label htmlFor="taskName">
-              Task Name
-            </Label>
-
+            <RequiredLabel>Task Name</RequiredLabel>
             <Input
               id="taskName"
               placeholder="Enter task name"
@@ -67,21 +67,16 @@ export function AddTaskDialog({
             />
           </div>
 
-          {/* Parent */}
+          {/* Parent - OPTIONAL (auto-assigned if empty) */}
           <div className="space-y-2">
             <Label>Parent Task</Label>
-
             <Select disabled>
               <SelectTrigger>
                 <SelectValue placeholder="Select parent task" />
               </SelectTrigger>
-
               <SelectContent>
                 {parentTasks.map((task) => (
-                  <SelectItem
-                    key={task.id}
-                    value={task.id}
-                  >
+                  <SelectItem key={task.id} value={task.id}>
                     {task.title}
                   </SelectItem>
                 ))}
@@ -89,87 +84,61 @@ export function AddTaskDialog({
             </Select>
           </div>
 
-          {/* Task Type */}
+          {/* Task Type - MANDATORY */}
           <div className="space-y-2">
-            <Label>Task Type</Label>
-
+            <RequiredLabel>Task Type</RequiredLabel>
             <Select disabled>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Task Type" />
               </SelectTrigger>
-
               <SelectContent>
-                <SelectItem value="task">
-                  Task
-                </SelectItem>
-
-                <SelectItem value="project">
-                  Project
-                </SelectItem>
-
-                <SelectItem value="milestone">
-                  Milestone
-                </SelectItem>
+                <SelectItem value="task">Task</SelectItem>
+                <SelectItem value="project">Project</SelectItem>
+                <SelectItem value="milestone">Milestone</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {/* Start Date */}
+          {/* Start Date - MANDATORY */}
           <div className="space-y-2">
-            <Label>Start Date</Label>
-
-            <Input
-              type="datetime-local"
-              disabled
-            />
+            <RequiredLabel>Start Date</RequiredLabel>
+            <Input type="datetime-local" disabled />
           </div>
 
-          {/* End Date */}
+          {/* End Date - MANDATORY */}
           <div className="space-y-2">
-            <Label>End Date</Label>
-
-            <Input
-              type="datetime-local"
-              disabled
-            />
+            <RequiredLabel>End Date</RequiredLabel>
+            <Input type="datetime-local" disabled />
           </div>
 
-          {/* Duration */}
+          {/* Duration - MANDATORY */}
           <div className="space-y-2">
-            <Label>Duration</Label>
-
-            <Input
-              placeholder="e.g. 5 Days"
-              disabled
-            />
+            <RequiredLabel>Duration</RequiredLabel>
+            <Input placeholder="e.g. 5 Days" disabled />
           </div>
 
-          {/* Progress */}
+          {/* Progress - MANDATORY */}
           <div className="space-y-2">
-            <Label>Progress (%)</Label>
-
-            <Input
-              type="number"
-              placeholder="0"
-              disabled
-            />
+            <RequiredLabel>Progress (%)</RequiredLabel>
+            <Input type="number" placeholder="0" disabled />
           </div>
 
-          {/* Predecessor */}
-          <div className="space-y-2 col-span-2">
+          {/* Assignee - OPTIONAL */}
+          <div className="space-y-2">
+            <Label>Assignee</Label>
+            <Input placeholder="Enter assignee name" disabled />
+          </div>
+
+          {/* Predecessor - OPTIONAL */}
+          <div className="space-y-2">
             <Label>Predecessor</Label>
-
             <Select disabled>
-              <SelectTrigger>
-                <SelectValue placeholder="Select predecessor task" />
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select predecessor" />
               </SelectTrigger>
-
               <SelectContent>
                 {predecessorTasks.map((task) => (
-                  <SelectItem
-                    key={task.id}
-                    value={task.id}
-                  >
+                  <SelectItem key={task.id} value={task.id}>
                     {task.title}
                   </SelectItem>
                 ))}
@@ -179,16 +148,10 @@ export function AddTaskDialog({
         </div>
 
         <DialogFooter className="gap-2">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close
           </Button>
-
-          <Button disabled>
-            Create Task (Phase 2)
-          </Button>
+          <Button disabled>Create Task</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -1,5 +1,5 @@
 import type { Task } from '../types';
-import { GANTT_COLUMNS } from '../constants';
+// import { GANTT_COLUMNS } from '../constants';
 import { TaskNameCell } from './TaskNameCell';
 import { StartDateCell } from './StartDateCell';
 import { EndDateCell } from './EndDateCell';

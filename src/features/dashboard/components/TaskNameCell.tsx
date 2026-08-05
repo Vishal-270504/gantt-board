@@ -1,6 +1,12 @@
 import type { Task } from '../types';
 import { ExpandCollapseButton } from './ExpandCollapseButton';
 import { GANTT_COLUMNS } from '../constants';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface TaskNameCellProps {
   task: Task;
@@ -24,14 +30,24 @@ export function TaskNameCell({ task, depth, isExpanded, hasChildren }: TaskNameC
         hasChildren={hasChildren} 
       />
       
-      <span className="truncate font-medium">
-        {task.title}
-        {task.type === 'milestone' && (
-          <span className="ml-2 text-xs bg-muted/50 px-1.5 py-0.5 rounded text-muted-foreground font-normal border">
-            Milestone
-          </span>
-        )}
-      </span>
+      <TooltipProvider delayDuration={1150}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="truncate font-medium">
+              {task.title}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{task.title}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      
+      {task.type === 'milestone' && (
+        <span className="ml-2 text-xs bg-muted/50 px-1.5 py-0.5 rounded text-muted-foreground font-normal border">
+          Milestone
+        </span>
+      )}
     </div>
   );
 }
