@@ -1,4 +1,5 @@
 import { GanttTable } from './GanttTable';
+import { Timeline } from '@/features/Timeline/Timeline';
 
 export function DashboardLayout() {
   return (
@@ -18,10 +19,11 @@ export function DashboardLayout() {
         Overflow-auto prepares it for extensive horizontal scrolling of dates.
       */}
       <main className="flex-1 h-full overflow-auto relative bg-muted/20">
-        <div className="absolute inset-0 flex items-center justify-center border-2 border-dashed border-muted-foreground/30 m-8 rounded-lg text-muted-foreground">
-          Timeline Component Placeholder
-        </div>
-      </main>
+   <div className="absolute inset-0 flex items-center justify-center border-2 border-dashed border-muted-foreground/30 m-8 rounded-lg text-...">
+
+   </div>
+    <Timeline />
+  </main>
     </div>
   );
 }
