@@ -10,3 +10,16 @@ export interface Task {
   predecessors?: string[]; // Array of dependency Task IDs
   parentId: string | null;
 }
+
+export interface VisibleTask extends Task {
+  depth: number;
+}
+
+export interface PositionedTask extends VisibleTask {
+  left: number;
+  width: number;
+  top: number;
+  rowHeight: number;
+}
+
+export type TimelineScale = 'year' | 'quarter' | 'month' | 'week' | 'day' | 'hour';
