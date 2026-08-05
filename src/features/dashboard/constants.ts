@@ -1,7 +1,7 @@
 export interface GanttColumn {
   id: string;
   label: string;
-  width?: string;
+  width?: string | number;
 }
 
 export const GANTT_COLUMNS: GanttColumn[] = [
@@ -11,4 +11,5 @@ export const GANTT_COLUMNS: GanttColumn[] = [
   { id: 'duration', label: 'Duration', width: '80px' },
   { id: 'progress', label: 'Progress', width: '100px' },
   { id: 'predecessor', label: 'Predecessor', width: '100px' },
+  { id: 'addTask', label: 'Add Task', width: 140 },
 ];
