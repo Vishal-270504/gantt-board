@@ -40,7 +40,7 @@ export function GanttTableRow({
       <EndDateCell dateString={task.endDate} />
 
       {/* Duration */}
-      <DurationCell duration={task.duration} />
+      <DurationCell startDate={task.startDate} endDate={task.endDate} />
 
       {/* Progress */}
       <ProgressCell progress={task.progress} />

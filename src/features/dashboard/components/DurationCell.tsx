@@ -1,12 +1,15 @@
 import { GANTT_COLUMNS } from '../constants';
 
 interface DurationCellProps {
-  duration: number;
+  startDate: string;
+  endDate: string;
 }
 
-export function DurationCell({ duration }: DurationCellProps) {
-  const days = Math.floor(duration / 24);
-  const hours = duration % 24;
+export function DurationCell({ startDate, endDate }: DurationCellProps) {
+  const durationMs = new Date(endDate).getTime() - new Date(startDate).getTime();
+  const totalHours = Math.max(0, Math.floor(durationMs / (60 * 60 * 1000)));
+  const days = Math.floor(totalHours / 24);
+  const hours = totalHours % 24;
 
   const parts = [];
   if (days > 0) {

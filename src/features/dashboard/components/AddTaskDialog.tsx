@@ -1,3 +1,4 @@
+// @ts-ignore
 import { useMemo, useState } from 'react';
 import {
   Dialog,
