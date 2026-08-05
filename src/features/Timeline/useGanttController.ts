@@ -4,7 +4,7 @@ import { getOffset } from './ScaleConfig';
 import { toDate } from '../../lib/dateutils';
 import type { PositionedTask, VisibleTask } from '../dashboard/types';
 
-const ROW_HEIGHT = 36;
+const ROW_HEIGHT = 40;
 
 export function useGanttController(): PositionedTask[] {
   const tasks = useDashboardStore(selectDashboardTasks);
@@ -35,9 +35,13 @@ export function useGanttController(): PositionedTask[] {
     return visibleTasks.map((task, index) => {
       const taskStart = toDate(task.startDate);
       const taskEnd = toDate(task.endDate);
+      // Add 1 day so the tile ends ON the end date (not the day before)
+      const taskEndInclusive = task.type === 'milestone'
+        ? taskEnd
+        : new Date(taskEnd.getTime() + 86_400_000);
 
       const left = getOffset(taskStart, timelineStart, scale);
-      const width = task.type === 'milestone' ? 0 : getOffset(taskEnd, taskStart, scale);
+      const width = task.type === 'milestone' ? 0 : getOffset(taskEndInclusive, taskStart, scale);
 
       return {
         ...task,
@@ -49,3 +53,4 @@ export function useGanttController(): PositionedTask[] {
     });
   }, [tasks, expandedIds, scale, timelineStart]);
 }
+

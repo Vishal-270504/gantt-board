@@ -60,7 +60,7 @@ function getWeekNumber(d: Date): number {
 
 export const SCALE_CONFIGS: Record<TimelineScale, ScaleConfig> = {
   hour: {
-    unitWidth: 40,
+    unitWidth: 60,
     msPerUnit: MS_PER_HOUR,
     getUnits: eachHour,
     getGroups: (start, end) =>
@@ -71,7 +71,7 @@ export const SCALE_CONFIGS: Record<TimelineScale, ScaleConfig> = {
   },
 
   day: {
-    unitWidth: 32,
+    unitWidth: 48,
     msPerUnit: MS_PER_DAY,
     getUnits: eachDay,
     getGroups: (start, end) =>
@@ -82,7 +82,7 @@ export const SCALE_CONFIGS: Record<TimelineScale, ScaleConfig> = {
   },
 
   week: {
-    unitWidth: 24,
+    unitWidth: 36,
     msPerUnit: MS_PER_DAY,
     getUnits: eachDay,
     getGroups: (start, end) => groupByFormat(eachDay(start, end), (d) => `Week ${getWeekNumber(d)}`),
@@ -90,7 +90,7 @@ export const SCALE_CONFIGS: Record<TimelineScale, ScaleConfig> = {
   },
 
   month: {
-    unitWidth: 14,
+    unitWidth: 24,
     msPerUnit: MS_PER_DAY,
     getUnits: eachDay,
     getGroups: (start, end) =>
@@ -99,7 +99,7 @@ export const SCALE_CONFIGS: Record<TimelineScale, ScaleConfig> = {
   },
 
   quarter: {
-    unitWidth: 6,
+    unitWidth: 12,
     msPerUnit: MS_PER_DAY,
     getUnits: eachDay,
     getGroups: (start, end) =>
@@ -108,7 +108,7 @@ export const SCALE_CONFIGS: Record<TimelineScale, ScaleConfig> = {
   },
 
   year: {
-    unitWidth: 2,
+    unitWidth: 6,
     msPerUnit: MS_PER_DAY,
     getUnits: eachDay,
     getGroups: (start, end) => groupByFormat(eachDay(start, end), (d) => String(d.getFullYear())),

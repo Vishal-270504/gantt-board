@@ -12,9 +12,14 @@ interface TaskBarProps {
   title: string;
   assignee?: string;
   type?: Task['type'];
+  onDoubleClick?: () => void;
 }
 
-export function TaskBar({ left, width, top, height, progress, title, assignee, type = 'task' }: TaskBarProps) {
+// Approximate char width at 12px font ~7px/char, plus 16px padding
+const CHAR_WIDTH = 7;
+const BAR_PADDING = 16;
+
+export function TaskBar({ left, width, top, height, progress, title, assignee, type = 'task', onDoubleClick }: TaskBarProps) {
   const isProject = type === 'project';
 
   const barStyle = {
@@ -26,27 +31,52 @@ export function TaskBar({ left, width, top, height, progress, title, assignee, t
 
   const progressStyle = { '--progress-w': `${progress}%` } as CSSProperties;
 
+  // Determine if the title fits inside the bar
+  const estimatedTextWidth = title.length * CHAR_WIDTH + BAR_PADDING;
+  const titleFits = estimatedTextWidth <= width;
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <div
-          className={cn(
-            'absolute overflow-hidden border left-[var(--bar-left)] w-[var(--bar-w)] top-[var(--bar-top)] h-[var(--bar-h)]',
-            isProject
-              ? 'rounded-sm bg-slate-700/80 border-slate-800'
-              : 'rounded-md bg-blue-500/20 border-blue-500'
-          )}
-          style={barStyle}
+          className="absolute left-[var(--bar-left)] top-[var(--bar-top)] h-[var(--bar-h)] flex items-center"
+          style={{ ...barStyle, width: titleFits ? `${width}px` : undefined }}
+          onDoubleClick={onDoubleClick}
         >
-          {!isProject && <div className="h-full bg-blue-500/60 w-[var(--progress-w)]" style={progressStyle} />}
-          <span
+          {/* The actual coloured bar */}
+          <div
             className={cn(
-              'absolute inset-0 flex items-center px-2 text-xs truncate',
-              isProject ? 'text-white font-medium' : 'text-foreground'
+              'relative overflow-hidden border flex-shrink-0',
+              isProject
+                ? 'rounded-sm bg-slate-700/80 border-slate-800'
+                : 'rounded-md bg-blue-500/20 border-blue-500'
             )}
+            style={{ width: `${width}px`, height: '100%' }}
           >
-            {title}
-          </span>
+            {!isProject && <div className="h-full bg-blue-500/60 w-[var(--progress-w)]" style={progressStyle} />}
+            {titleFits && (
+              <span
+                className={cn(
+                  'absolute inset-0 flex items-center px-2 text-xs truncate',
+                  isProject ? 'text-white font-medium' : 'text-foreground'
+                )}
+              >
+                {title}
+              </span>
+            )}
+          </div>
+
+          {/* Title shown beside the bar when it doesn't fit inside */}
+          {!titleFits && (
+            <span
+              className={cn(
+                'ml-2 text-xs whitespace-nowrap font-medium',
+                isProject ? 'text-foreground font-semibold' : 'text-foreground'
+              )}
+            >
+              {title}
+            </span>
+          )}
         </div>
       </TooltipTrigger>
       <TooltipContent>

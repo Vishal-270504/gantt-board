@@ -5,6 +5,33 @@ import { mockTasks } from '../mockData';
 // for the timeline part
 import type { VisibleTask, TimelineScale } from '../types';
 
+export const getTimelineRangeForTasks = (tasks: Task[]) => {
+  if (!tasks || tasks.length === 0) {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30);
+    return { start, end };
+  }
+
+  let minTime = Infinity;
+  let maxTime = -Infinity;
+
+  tasks.forEach((t) => {
+    const s = new Date(t.startDate).getTime();
+    const e = new Date(t.endDate).getTime();
+    if (!isNaN(s) && s < minTime) minTime = s;
+    if (!isNaN(e) && e > maxTime) maxTime = e;
+  });
+
+  // Buffers: 7 days before, 14 days after
+  const start = new Date(minTime - 7 * 24 * 60 * 60 * 1000);
+  const end = new Date(maxTime + 14 * 24 * 60 * 60 * 1000);
+
+  return { start, end };
+};
+
+const initialRange = getTimelineRangeForTasks(mockTasks);
+
 interface DashboardState {
   tasks: Task[];
   expandedIds: Record<string, boolean>;
@@ -39,10 +66,11 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
   isLoading: false,
 
   // timeline
-  timelineStart: new Date(),
-  timelineEnd: new Date(),
+  timelineStart: initialRange.start,
+  timelineEnd: initialRange.end,
   scale: 'week',
   scrollTop: 0,
+
 
   expandTask: (id) => set((state) => ({
     expandedIds: { ...state.expandedIds, [id]: true }
