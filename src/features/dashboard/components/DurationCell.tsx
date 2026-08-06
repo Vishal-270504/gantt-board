@@ -1,4 +1,10 @@
 import { GANTT_COLUMNS } from '../constants';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface DurationCellProps {
   startDate: string;
@@ -26,7 +32,16 @@ export function DurationCell({ startDate, endDate }: DurationCellProps) {
       className="p-2 border-r border-border truncate h-full flex items-center flex-shrink-0 text-muted-foreground"
       style={{ width: GANTT_COLUMNS[3].width }}
     >
-      {durationStr}
+      <TooltipProvider delayDuration={1150}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="truncate">{durationStr}</span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{durationStr}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 }
