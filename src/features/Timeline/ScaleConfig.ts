@@ -108,7 +108,7 @@ export const SCALE_CONFIGS: Record<TimelineScale, ScaleConfig> = {
   },
 
   year: {
-    unitWidth: 6,
+    unitWidth: 15,
     msPerUnit: MS_PER_DAY,
     getUnits: eachDay,
     getGroups: (start, end) => groupByFormat(eachDay(start, end), (d) => String(d.getFullYear())),
