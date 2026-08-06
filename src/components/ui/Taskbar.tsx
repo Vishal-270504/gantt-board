@@ -39,7 +39,7 @@ export function TaskBar({ left, width, top, height, progress, title, assignee, t
     <Tooltip>
       <TooltipTrigger asChild>
         <div
-          className="absolute left-[var(--bar-left)] top-[var(--bar-top)] h-[var(--bar-h)] flex items-center"
+          className="absolute left-[var(--bar-left)] top-[var(--bar-top)] h-[var(--bar-h)] flex items-center mt-1"
           style={{ ...barStyle, width: titleFits ? `${width}px` : undefined }}
           onDoubleClick={onDoubleClick}
         >
