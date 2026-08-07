@@ -1,5 +1,6 @@
 import type { Task } from '../types';
 import type { ColumnWidths } from '../constants';
+import { useDashboardStore, selectVisibleColumns } from '../store/useDashboardStore';
 import { TaskNameCell } from './TaskNameCell';
 import { StartDateCell } from './StartDateCell';
 import { EndDateCell } from './EndDateCell';
@@ -12,7 +13,7 @@ interface GanttTableRowProps {
   depth: number;
   isExpanded: boolean;
   hasChildren: boolean;
-  columnWidths: ColumnWidths;
+  widths: ColumnWidths;
 }
 
 export function GanttTableRow({
@@ -20,33 +21,66 @@ export function GanttTableRow({
   depth,
   isExpanded,
   hasChildren,
-  columnWidths,
+  widths,
 }: GanttTableRowProps) {
-  return (
-    <div className="flex border-b border-border hover:bg-muted/50 transition-colors text-sm items-center h-10 w-max min-w-full">
-      {/* Task Name Column */}
-      <TaskNameCell 
-        task={task} 
-        depth={depth} 
-        isExpanded={isExpanded} 
-        hasChildren={hasChildren} 
-        width={columnWidths.title}
+  const visibleColumns = useDashboardStore(selectVisibleColumns);
+
+  const columnRenderers: Record<string, React.ReactNode> = {
+    title: (
+      <TaskNameCell
+        key="title"
+        task={task}
+        depth={depth}
+        isExpanded={isExpanded}
+        hasChildren={hasChildren}
+        width={widths.title}
       />
+    ),
+    startDate: (
+      <StartDateCell
+        key="startDate"
+        dateString={task.startDate}
+        width={widths.startDate}
+      />
+    ),
+    endDate: (
+      <EndDateCell
+        key="endDate"
+        dateString={task.endDate}
+        width={widths.endDate}
+      />
+    ),
+    duration: (
+      <DurationCell
+        key="duration"
+        startDate={task.startDate}
+        endDate={task.endDate}
+        width={widths.duration}
+      />
+    ),
+    progress: (
+      <ProgressCell
+        key="progress"
+        progress={task.progress}
+        width={widths.progress}
+      />
+    ),
+    predecessor: (
+      <PredecessorCell
+        key="predecessor"
+        predecessorIds={task.predecessors || []}
+        width={widths.predecessor}
+      />
+    ),
+  };
 
-      {/* Start Date */}
-      <StartDateCell dateString={task.startDate} width={columnWidths.startDate} />
+  const cells = visibleColumns
+    .map((colId) => columnRenderers[colId])
+    .filter(Boolean);
 
-      {/* End Date */}
-      <EndDateCell dateString={task.endDate} width={columnWidths.endDate} />
-
-      {/* Duration */}
-      <DurationCell startDate={task.startDate} endDate={task.endDate} width={columnWidths.duration} />
-
-      {/* Progress */}
-      <ProgressCell progress={task.progress} width={columnWidths.progress} />
-
-      {/* Predecessor */}
-      <PredecessorCell predecessorIds={task.predecessors || []} width={columnWidths.predecessor} />
+  return (
+    <div className="flex border-b border-border hover:bg-muted/50 transition-colors text-sm items-center w-max min-w-full h-10">
+      {cells}
     </div>
   );
 }

@@ -22,10 +22,8 @@ export function Timeline() {
   const positionedTasks = useGanttController();
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  // Track whether we've done initial scroll for the current scale
   const didScrollRef = useRef<string | null>(null);
 
-  // When scale changes, scroll the viewport to show the earliest task
   useEffect(() => {
     const key = scale;
     if (didScrollRef.current === key) return;
@@ -39,7 +37,6 @@ export function Timeline() {
     ) as HTMLElement | null;
     if (!viewport) return;
 
-    // Find the earliest startDate among all tasks
     let earliestMs = Infinity;
     tasks.forEach((t) => {
       const ms = new Date(t.startDate).getTime();
@@ -66,7 +63,8 @@ export function Timeline() {
               endDate={timelineEnd}
               scale={scale}
             />
-            <div className="relative">
+            {/* pt-12 pushes grid content below the sticky header, matching table layout */}
+            <div className="relative pt-12">
               <TimelineGrid
                 startDate={timelineStart}
                 endDate={timelineEnd}
@@ -74,7 +72,6 @@ export function Timeline() {
                 rowHeight={40}
                 rowCount={positionedTasks.length}
               />
-              {/* Dependency arrows */}
               <DependencyArrows tasks={positionedTasks} rowHeight={40} />
               {positionedTasks.map((t) =>
                 t.type === "milestone" ? (

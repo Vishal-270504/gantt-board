@@ -14,7 +14,6 @@ interface PredecessorCellProps {
 export function PredecessorCell({ predecessorIds, width }: PredecessorCellProps) {
   const tasks = useDashboardStore((state) => state.tasks);
   
-  // Resolve IDs to human-readable Task Names
   const names = predecessorIds
     .map(id => tasks.find(task => task.id === id)?.title)
     .filter(Boolean)

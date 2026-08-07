@@ -9,11 +9,10 @@ interface TaskNodeProps {
   task: Task;
   allTasks: Task[];
   depth: number;
-  columnWidths: ColumnWidths;
+  widths: ColumnWidths;
 }
 
-// Recursive component to handle hierarchy
-function TaskNode({ task, allTasks, depth, columnWidths }: TaskNodeProps) {
+function TaskNode({ task, allTasks, depth, widths }: TaskNodeProps) {
   const expandedIds = useDashboardStore((state) => state.expandedIds);
   const isExpanded = !!expandedIds[task.id];
   
@@ -27,21 +26,21 @@ function TaskNode({ task, allTasks, depth, columnWidths }: TaskNodeProps) {
         depth={depth} 
         isExpanded={isExpanded} 
         hasChildren={hasChildren}
-        columnWidths={columnWidths}
+        widths={widths}
       />
       
       {isExpanded && hasChildren && children.map((child) => (
-        <TaskNode key={child.id} task={child} allTasks={allTasks} depth={depth + 1} columnWidths={columnWidths} />
+        <TaskNode key={child.id} task={child} allTasks={allTasks} depth={depth + 1} widths={widths} />
       ))}
     </>
   );
 }
 
 interface GanttTableBodyProps {
-  columnWidths: ColumnWidths;
+  widths: ColumnWidths;
 }
 
-export function GanttTableBody({ columnWidths }: GanttTableBodyProps) {
+export function GanttTableBody({ widths }: GanttTableBodyProps) {
   const tasks = useDashboardStore((state) => state.tasks);
   const isLoading = useDashboardStore(selectDashboardIsLoading);
   
@@ -58,7 +57,7 @@ export function GanttTableBody({ columnWidths }: GanttTableBodyProps) {
   return (
     <div className="flex-1 w-full bg-background">
       {rootTasks.map((task) => (
-        <TaskNode key={task.id} task={task} allTasks={tasks} depth={0} columnWidths={columnWidths} />
+        <TaskNode key={task.id} task={task} allTasks={tasks} depth={0} widths={widths} />
       ))}
     </div>
   );

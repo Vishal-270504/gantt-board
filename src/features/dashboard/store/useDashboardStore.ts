@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import type { Task } from '../types';
+import type { Task, GanttCustomization } from '../types';
 import { mockTasks } from '../mockData';
+import { DEFAULT_GANTT_CUSTOMIZATION } from '../constants';
 
 // for the timeline part
 import type { VisibleTask, TimelineScale } from '../types';
@@ -42,6 +43,9 @@ interface DashboardState {
   timelineEnd: Date;
   scale: TimelineScale;
   scrollTop: number;
+
+  // customization
+  customization: GanttCustomization;
 }
 
 interface DashboardActions {
@@ -56,6 +60,14 @@ interface DashboardActions {
   setTimelineRange: (start: Date, end: Date) => void;
   setScale: (scale: TimelineScale) => void;
   setScrollTop: (n: number) => void;
+
+  // customization actions
+  setCustomization: (customization: Partial<GanttCustomization>) => void;
+  setTaskBarRadius: (radius: GanttCustomization['taskBarRadius']) => void;
+  setTaskBarColor: (color: GanttCustomization['taskBarColor']) => void;
+  setTaskBarProgressColor: (color: GanttCustomization['taskBarProgressColor']) => void;
+  toggleColumnVisibility: (columnId: string) => void;
+  setVisibleColumns: (columns: string[]) => void;
 }
 
 type DashboardStore = DashboardState & DashboardActions;
@@ -71,6 +83,8 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
   scale: 'week',
   scrollTop: 0,
 
+  // customization
+  customization: DEFAULT_GANTT_CUSTOMIZATION,
 
   expandTask: (id) => set((state) => ({
     expandedIds: { ...state.expandedIds, [id]: true }
@@ -105,10 +119,38 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
   setIsLoading: (isLoading) => set(() => ({ isLoading })),
   
   // timeline
-
   setTimelineRange: (timelineStart, timelineEnd) => set(() => ({ timelineStart, timelineEnd })),
   setScale: (scale) => set(() => ({ scale })),
   setScrollTop: (scrollTop) => set(() => ({ scrollTop })),
+
+  // customization actions
+  setCustomization: (partial) => set((state) => ({
+    customization: { ...state.customization, ...partial }
+  })),
+
+  setTaskBarRadius: (taskBarRadius) => set((state) => ({
+    customization: { ...state.customization, taskBarRadius }
+  })),
+
+  setTaskBarColor: (taskBarColor) => set((state) => ({
+    customization: { ...state.customization, taskBarColor }
+  })),
+
+  setTaskBarProgressColor: (taskBarProgressColor) => set((state) => ({
+    customization: { ...state.customization, taskBarProgressColor }
+  })),
+
+  toggleColumnVisibility: (columnId) => set((state) => {
+    const current = state.customization.visibleColumns;
+    const next = current.includes(columnId)
+      ? current.filter((id) => id !== columnId)
+      : [...current, columnId];
+    return { customization: { ...state.customization, visibleColumns: next } };
+  }),
+
+  setVisibleColumns: (visibleColumns) => set((state) => ({
+    customization: { ...state.customization, visibleColumns }
+  })),
 }));
 
 // Selectors
@@ -122,6 +164,13 @@ export const selectTimelineStart = (state: DashboardStore) => state.timelineStar
 export const selectTimelineEnd = (state: DashboardStore) => state.timelineEnd;
 export const selectScale = (state: DashboardStore) => state.scale;
 export const selectScrollTop = (state: DashboardStore) => state.scrollTop;
+
+// customization - selectors
+export const selectCustomization = (state: DashboardStore) => state.customization;
+export const selectVisibleColumns = (state: DashboardStore) => state.customization.visibleColumns;
+export const selectTaskBarRadius = (state: DashboardStore) => state.customization.taskBarRadius;
+export const selectTaskBarColor = (state: DashboardStore) => state.customization.taskBarColor;
+export const selectTaskBarProgressColor = (state: DashboardStore) => state.customization.taskBarProgressColor;
 
 export const selectVisibleTasks = (state: DashboardStore): VisibleTask[] => {
   const byParent: Record<string, Task[]> = {};

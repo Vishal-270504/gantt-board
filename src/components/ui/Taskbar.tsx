@@ -1,6 +1,6 @@
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import type { Task } from '../../features/dashboard/types';
+import type { Task, GanttColor, GanttCustomization } from '../../features/dashboard/types';
 import type { CSSProperties } from 'react';
 
 interface TaskBarProps {
@@ -12,15 +12,85 @@ interface TaskBarProps {
   title: string;
   assignee?: string;
   type?: Task['type'];
+  barColor?: GanttColor;
+  progressColor?: GanttColor;
+  radius?: GanttCustomization['taskBarRadius'];
   onDoubleClick?: () => void;
 }
+
+// Tailwind classes are written out explicitly so the JIT compiler can detect them.
+const BAR_COLOR_STYLES: Record<GanttColor, { bar: string; solid: string; progress: string }> = {
+  slate: {
+    bar: 'bg-slate-500/20 border-slate-500',
+    solid: 'bg-slate-700/80 border-slate-800',
+    progress: 'bg-slate-500/60',
+  },
+  blue: {
+    bar: 'bg-blue-500/20 border-blue-500',
+    solid: 'bg-blue-700/80 border-blue-800',
+    progress: 'bg-blue-500/60',
+  },
+  indigo: {
+    bar: 'bg-indigo-500/20 border-indigo-500',
+    solid: 'bg-indigo-700/80 border-indigo-800',
+    progress: 'bg-indigo-500/60',
+  },
+  emerald: {
+    bar: 'bg-emerald-500/20 border-emerald-500',
+    solid: 'bg-emerald-700/80 border-emerald-800',
+    progress: 'bg-emerald-500/60',
+  },
+  amber: {
+    bar: 'bg-amber-500/20 border-amber-500',
+    solid: 'bg-amber-700/80 border-amber-800',
+    progress: 'bg-amber-500/60',
+  },
+  rose: {
+    bar: 'bg-rose-500/20 border-rose-500',
+    solid: 'bg-rose-700/80 border-rose-800',
+    progress: 'bg-rose-500/60',
+  },
+  violet: {
+    bar: 'bg-violet-500/20 border-violet-500',
+    solid: 'bg-violet-700/80 border-violet-800',
+    progress: 'bg-violet-500/60',
+  },
+  cyan: {
+    bar: 'bg-cyan-500/20 border-cyan-500',
+    solid: 'bg-cyan-700/80 border-cyan-800',
+    progress: 'bg-cyan-500/60',
+  },
+};
+
+const RADIUS_STYLES: Record<GanttCustomization['taskBarRadius'], string> = {
+  none: 'rounded-none',
+  sm: 'rounded-sm',
+  md: 'rounded-md',
+  lg: 'rounded-lg',
+  full: 'rounded-full',
+};
 
 // Approximate char width at 12px font ~7px/char, plus 16px padding
 const CHAR_WIDTH = 7;
 const BAR_PADDING = 16;
 
-export function TaskBar({ left, width, top, height, progress, title, assignee, type = 'task', onDoubleClick }: TaskBarProps) {
+export function TaskBar({
+  left,
+  width,
+  top,
+  height,
+  progress,
+  title,
+  assignee,
+  type = 'task',
+  barColor = 'blue',
+  progressColor = 'indigo',
+  radius = 'md',
+  onDoubleClick,
+}: TaskBarProps) {
   const isProject = type === 'project';
+  const color = BAR_COLOR_STYLES[barColor];
+  const progressFill = BAR_COLOR_STYLES[progressColor].progress;
 
   const barStyle = {
     '--bar-left': `${left}px`,
@@ -47,13 +117,12 @@ export function TaskBar({ left, width, top, height, progress, title, assignee, t
           <div
             className={cn(
               'relative overflow-hidden border flex-shrink-0',
-              isProject
-                ? 'rounded-sm bg-slate-700/80 border-slate-800'
-                : 'rounded-md bg-blue-500/20 border-blue-500'
+              RADIUS_STYLES[radius],
+              isProject ? color.solid : color.bar
             )}
             style={{ width: `${width}px`, height: '100%' }}
           >
-            {!isProject && <div className="h-full bg-blue-500/60 w-[var(--progress-w)]" style={progressStyle} />}
+            {!isProject && <div className={cn('h-full w-[var(--progress-w)]', progressFill)} style={progressStyle} />}
             {titleFits && (
               <span
                 className={cn(

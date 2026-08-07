@@ -1,3 +1,15 @@
+// ── Color Palette (predefined, not arbitrary) ──
+export type GanttColor =
+  | 'slate'
+  | 'blue'
+  | 'indigo'
+  | 'emerald'
+  | 'amber'
+  | 'rose'
+  | 'violet'
+  | 'cyan';
+
+// ── Core Task Types ──
 export interface Task {
   id: string;
   title: string;
@@ -22,3 +34,20 @@ export interface PositionedTask extends VisibleTask {
 }
 
 export type TimelineScale = 'year' | 'quarter' | 'month' | 'week' | 'day' | 'hour';
+
+// ── Gantt Customization ──
+export interface GanttCustomization {
+  taskBarRadius: 'none' | 'sm' | 'md' | 'lg' | 'full';
+  taskBarColor: GanttColor;
+  taskBarProgressColor: GanttColor;
+  visibleColumns: string[]; // e.g. ['title', 'startDate', 'endDate', 'progress', 'assignee']
+}
+
+// ── Gantt Table Columns ──
+export interface GanttColumn {
+  id: string;
+  label: string;
+  width: number | string; // e.g. '250px' (CSS) or raw px number
+}
+
+export type ColumnWidths = Record<string, number>;

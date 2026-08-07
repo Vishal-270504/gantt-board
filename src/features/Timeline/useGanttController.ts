@@ -35,7 +35,6 @@ export function useGanttController(): PositionedTask[] {
     return visibleTasks.map((task, index) => {
       const taskStart = toDate(task.startDate);
       const taskEnd = toDate(task.endDate);
-      // Add 1 day so the tile ends ON the end date (not the day before)
       const taskEndInclusive = task.type === 'milestone'
         ? taskEnd
         : new Date(taskEnd.getTime() + 86_400_000);
@@ -53,4 +52,3 @@ export function useGanttController(): PositionedTask[] {
     });
   }, [tasks, expandedIds, scale, timelineStart]);
 }
-
