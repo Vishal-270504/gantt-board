@@ -21,31 +21,31 @@ export function DependencyArrows({ tasks, rowHeight }: DependencyArrowsProps) {
     if (!successor.predecessors?.length) return;
 
     successor.predecessors.forEach((predId) => {
-  const pred = taskMap.get(predId);
-  if (!pred) return;
+      const pred = taskMap.get(predId);
+      if (!pred) return;
 
-  const x1 = pred.left + pred.width;
-  const y1 = pred.top + rowHeight / 2;
+      const x1 = pred.left + pred.width;
+      const y1 = pred.top + rowHeight / 2;
 
-  const x2 = successor.left;
-  const y2 = successor.top + rowHeight / 2;
+      const x2 = successor.left;
+      const y2 = successor.top + rowHeight / 2;
 
-  const dx = x2 - x1;
-  const dy = y2 - y1;
+      const dx = x2 - x1;
+      const dy = y2 - y1;
 
-  const gap = 16; 
-  const r = 8;   
+      const gap = 16;
+      const r = 8;
 
-  let path: string;
+      let path: string;
 
-  if (x2 < x1 + gap && dy !== 0) {
-    const xRight = x1 + gap;
-    const xLeft = x2 - gap;
-    const dropY = successor.top - 12;
-    const vDir = Math.sign(dropY - y1) || 1;
-    const vDir2 = Math.sign(y2 - dropY) || 1;
+      if (x2 < x1 + gap && dy !== 0) {
+        const xRight = x1 + gap;
+        const xLeft = x2 - gap - 5;
+        const dropY = successor.top;
+        const vDir = Math.sign(dropY - y1) || 1;
+        const vDir2 = Math.sign(y2 - dropY) || 1;
 
-    path = `
+        path = `
       M ${x1} ${y1}
       H ${xRight - r}
       Q ${xRight} ${y1} ${xRight} ${y1 + vDir * r}
@@ -57,18 +57,22 @@ export function DependencyArrows({ tasks, rowHeight }: DependencyArrowsProps) {
       Q ${xLeft} ${y2} ${xLeft + r} ${y2}
       H ${x2}
     `;
-  } else if (dx >= 0 && dy !== 0) {
-    const vDir = Math.sign(dy) || 1;
+      } else if (dx >= 0 && dy !== 0) {
+        const vDir = Math.sign(dy) || 1;
 
-    path = `
-      M ${x1} ${y1}
-      V ${y2 - vDir * r}
-      Q ${x1} ${y2} ${x1 + r} ${y2}
-      H ${x2}
-    `;
-  } else {
-    const elbowX = Math.max(x1 + 16, x2 - 16);
-    path = `
+        const elbowX = x1 + Math.min(30, dx / 2);
+
+        path = `
+    M ${x1} ${y1}
+    H ${elbowX - r}
+    Q ${elbowX} ${y1} ${elbowX} ${y1 + vDir * r}
+    V ${y2 - vDir * r}
+    Q ${elbowX} ${y2} ${elbowX + r} ${y2}
+    H ${x2}
+  `;
+      } else {
+        const elbowX = Math.max(x1 + 16, x2 - 16);
+        path = `
       M ${x1} ${y1}
       H ${elbowX - r}
       Q ${elbowX} ${y1} ${elbowX} ${y1 + Math.sign(dy) * r}
@@ -76,22 +80,22 @@ export function DependencyArrows({ tasks, rowHeight }: DependencyArrowsProps) {
       Q ${elbowX} ${y2} ${elbowX + r} ${y2}
       H ${x2}
     `;
-  }
+      }
 
-  arrows.push(
-    <path
-      key={`${pred.id}->${successor.id}`}
-      d={path}
-      fill="none"
-      stroke="var(--arrow-color, #6366f1)"
-      strokeWidth="1.5"
-      strokeDasharray="4 2"
-      opacity="0.75"
-      markerEnd="url(#arrowhead)"
-    />
-  );
-});
-  })
+      arrows.push(
+        <path
+          key={`${pred.id}->${successor.id}`}
+          d={path}
+          fill="none"
+          stroke="var(--arrow-color, #6366f1)"
+          strokeWidth="1.5"
+          strokeDasharray="4 2"
+          opacity="0.75"
+          markerEnd="url(#arrowhead)"
+        />,
+      );
+    });
+  });
 
   if (!arrows.length) return null;
 

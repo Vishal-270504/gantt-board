@@ -9,8 +9,8 @@ interface MilestoneMarkerProps {
 
 export function MilestoneMarker({ left, top, title }: MilestoneMarkerProps) {
   const markerStyle = {
-    '--m-left': `${left - 7}px`,
-    '--m-top': `${top + 6}px`,
+    '--m-left': `${left + 5}px`,
+    '--m-top': `${top + 12.5}px`,
   } as CSSProperties;
 
   return (
