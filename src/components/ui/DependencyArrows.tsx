@@ -6,18 +6,12 @@ interface DependencyArrowsProps {
   rowHeight: number;
 }
 
-/**
- * Renders SVG polyline arrows from the right edge of a predecessor task bar
- * to the left edge of the successor task bar.
- */
 export function DependencyArrows({ tasks, rowHeight }: DependencyArrowsProps) {
   if (!tasks.length) return null;
 
-  // Build a map from task id → positioned task
   const taskMap = new Map<string, PositionedTask>();
   tasks.forEach((t) => taskMap.set(t.id, t));
 
-  // Total grid dimensions
   const maxRight = Math.max(...tasks.map((t) => t.left + t.width), 0);
   const totalHeight = tasks.length * rowHeight;
 
@@ -26,62 +20,25 @@ export function DependencyArrows({ tasks, rowHeight }: DependencyArrowsProps) {
   tasks.forEach((successor) => {
     if (!successor.predecessors?.length) return;
 
-    // successor.predecessors.forEach((predId) => {
-    //   const pred = taskMap.get(predId);
-    //   if (!pred) return;
-
-    //   // Source: right edge of predecessor bar, vertically centred
-    //   const x1 = pred.left + pred.width;
-    //   const y1 = pred.top + rowHeight / 2;
-
-    //   // Target: left edge of successor bar, vertically centred
-    //   const x2 = successor.left;
-    //   const y2 = successor.top + rowHeight / 2;
-
-    //   // Route an orthogonal elbow:
-    //   // go right 10px, drop/rise to y2, then go right to x2
-    //   const elbowX = Math.max(x1 + 12, x2 - 12);
-
-    //   const points = `${x1},${y1} ${elbowX},${y1} ${elbowX},${y2} ${x2},${y2}`;
-
-    //   arrows.push(
-    //     <g key={`${pred.id}->${successor.id}`}>
-    //       <polyline
-    //         points={points}
-    //         fill="none"
-    //         stroke="var(--arrow-color, #6366f1)"
-    //         strokeWidth="1.5"
-    //         strokeDasharray="4 2"
-    //         opacity="0.75"
-    //         markerEnd="url(#arrowhead)"
-    //       />
-    //     </g>
-    //   );
-    // });
-
     successor.predecessors.forEach((predId) => {
   const pred = taskMap.get(predId);
   if (!pred) return;
 
-  // Source: right edge of predecessor
   const x1 = pred.left + pred.width;
   const y1 = pred.top + rowHeight / 2;
 
-  // Target: left edge of successor
   const x2 = successor.left;
   const y2 = successor.top + rowHeight / 2;
 
   const dx = x2 - x1;
   const dy = y2 - y1;
 
-  const gap = 16; // horizontal clearance off each bar
-  const r = 8;    // corner radius
+  const gap = 16; 
+  const r = 8;   
 
   let path: string;
 
   if (x2 < x1 + gap && dy !== 0) {
-    // successor starts at/before predecessor's right edge ->
-    // wrap around behind the tile: right, down, left, down, right
     const xRight = x1 + gap;
     const xLeft = x2 - gap;
     const dropY = successor.top - 12;
@@ -101,8 +58,6 @@ export function DependencyArrows({ tasks, rowHeight }: DependencyArrowsProps) {
       H ${x2}
     `;
   } else if (dx >= 0 && dy !== 0) {
-    // successor is below (and to the right, or directly below) ->
-    // simple down-then-right elbow, no curve
     const vDir = Math.sign(dy) || 1;
 
     path = `
@@ -112,8 +67,6 @@ export function DependencyArrows({ tasks, rowHeight }: DependencyArrowsProps) {
       H ${x2}
     `;
   } else {
-    // same row roughly, or successor to the left at same height ->
-    // existing elbow routing (right, corner, right)
     const elbowX = Math.max(x1 + 16, x2 - 16);
     path = `
       M ${x1} ${y1}
