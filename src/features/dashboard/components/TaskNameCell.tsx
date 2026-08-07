@@ -1,6 +1,5 @@
 import type { Task } from '../types';
 import { ExpandCollapseButton } from './ExpandCollapseButton';
-import { GANTT_COLUMNS } from '../constants';
 import {
   Tooltip,
   TooltipContent,
@@ -13,14 +12,15 @@ interface TaskNameCellProps {
   depth: number;
   isExpanded: boolean;
   hasChildren: boolean;
+  width: number;
 }
 
-export function TaskNameCell({ task, depth, isExpanded, hasChildren }: TaskNameCellProps) {
+export function TaskNameCell({ task, depth, isExpanded, hasChildren, width }: TaskNameCellProps) {
   return (
     <div
       className="p-2 border-r border-border truncate flex items-center h-full flex-shrink-0"
       style={{
-        width: GANTT_COLUMNS[0].width,
+        width,
         paddingLeft: `${depth * 16 + 8}px`, // Dynamic indentation
       }}
     >

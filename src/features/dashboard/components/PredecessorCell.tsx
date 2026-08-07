@@ -1,4 +1,3 @@
-import { GANTT_COLUMNS } from '../constants';
 import { useDashboardStore } from '../store/useDashboardStore';
 import {
   Tooltip,
@@ -9,9 +8,10 @@ import {
 
 interface PredecessorCellProps {
   predecessorIds: string[];
+  width: number;
 }
 
-export function PredecessorCell({ predecessorIds }: PredecessorCellProps) {
+export function PredecessorCell({ predecessorIds, width }: PredecessorCellProps) {
   const tasks = useDashboardStore((state) => state.tasks);
   
   // Resolve IDs to human-readable Task Names
@@ -23,7 +23,7 @@ export function PredecessorCell({ predecessorIds }: PredecessorCellProps) {
   return (
     <div
       className="p-2 truncate h-full flex items-center flex-shrink-0 text-muted-foreground"
-      style={{ width: GANTT_COLUMNS[5].width }}
+      style={{ width }}
     >
       {names ? (
         <TooltipProvider delayDuration={1150}>

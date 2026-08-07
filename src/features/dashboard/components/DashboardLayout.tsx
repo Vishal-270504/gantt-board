@@ -1,12 +1,30 @@
 import { GanttTable } from "./GanttTable";
-import { useState, useRef, useEffect } from "react";
-import { AddTaskDialog } from "./AddTaskDialog";
+import { useEffect, useRef, useState } from "react";
 import { Timeline } from "@/features/Timeline/Timeline";
+import { ScaleNavbar } from "./ScaleNavbar";
+
+const MIN_LEFT_PANEL_WIDTH = 300;
+const MAX_LEFT_PANEL_WIDTH = 800;
 
 export function DashboardLayout() {
-  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const tableRef = useRef<HTMLElement>(null);
   const timelineContainerRef = useRef<HTMLDivElement>(null);
+  const [leftPanelWidth, setLeftPanelWidth] = useState(400);
+  const [isResizing, setIsResizing] = useState(false);
+  const dragState = useRef<{ startX: number; startWidth: number } | null>(null);
+
+  useEffect(() => {
+    if (!isResizing) return;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    const previousOverflow = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = 'hidden';
+    return () => {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.documentElement.style.overflow = previousOverflow;
+    };
+  }, [isResizing]);
 
   useEffect(() => {
     const tableEl = tableRef.current;
@@ -56,32 +74,76 @@ export function DashboardLayout() {
     };
   }, []);
 
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragState.current) return;
+    const delta = e.clientX - dragState.current.startX;
+    const nextWidth = Math.min(
+      MAX_LEFT_PANEL_WIDTH,
+      Math.max(MIN_LEFT_PANEL_WIDTH, dragState.current.startWidth + delta),
+    );
+    setLeftPanelWidth(nextWidth);
+  };
+
+  const stopResize = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragState.current) return;
+    dragState.current = null;
+    setIsResizing(false);
+    e.currentTarget.releasePointerCapture(e.pointerId);
+  };
+
+  const startResize = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragState.current = {
+      startX: e.clientX,
+      startWidth: leftPanelWidth,
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setIsResizing(true);
+  };
+
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
-      {/* 
-        Left Panel: Fixed Task Table Container
-        Flex-shrink-0 prevents it from squishing. 
-        Overflow-auto allows independent horizontal/vertical scrolling for the table.
-      */}
-      <aside 
-        ref={tableRef}
-        className="w-[400px] lg:w-[500px] flex-shrink-0 h-full overflow-auto border-r z-10 bg-card"
-      >
-        <GanttTable onAddTask={() => setIsAddTaskOpen(true)} />
-      </aside>
+    <div className="flex flex-col h-screen w-full overflow-hidden bg-background text-foreground">
+      {/* Top bar: full-width navbar with the timeline scale selector */}
+      <ScaleNavbar />
 
-      {/* 
-        Right Panel: Timeline Container
-      */}
-      <main 
-        ref={timelineContainerRef}
-        className="flex-1 h-full overflow-hidden relative bg-muted/20"
-      >
-        <Timeline />
-      </main>
+      <div className="flex flex-1 min-h-0">
+        {/* 
+          Left Panel: Fixed Task Table Container
+          Flex-shrink-0 prevents it from squishing. 
+          Overflow-auto allows independent horizontal/vertical scrolling for the table.
+        */}
+        <aside 
+          ref={tableRef}
+          className="flex-shrink-0 h-full overflow-auto border-r z-10 bg-card"
+          style={{ width: leftPanelWidth }}
+        >
+          <GanttTable />
+        </aside>
 
-      <AddTaskDialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen} />
+        {/* Vertical resize handle between the left panel and the timeline */}
+        <div
+          className="z-20 w-1.5 cursor-col-resize hover:bg-primary/30 active:bg-primary/40 shrink-0"
+          onPointerDown={startResize}
+          onPointerMove={handlePointerMove}
+          onPointerUp={stopResize}
+          onPointerCancel={stopResize}
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize left panel"
+        />
+
+        {/* 
+          Right Panel: Timeline Container
+        */}
+        <main 
+          ref={timelineContainerRef}
+          className="flex-1 h-full overflow-hidden relative bg-muted/20"
+        >
+          <Timeline />
+        </main>
+      </div>
+
     </div>
   );
 }
-

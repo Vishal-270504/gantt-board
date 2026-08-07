@@ -1,4 +1,5 @@
 import type { Task } from '../types';
+import type { ColumnWidths } from '../constants';
 import { useDashboardStore, selectDashboardIsLoading } from '../store/useDashboardStore';
 import { GanttTableRow } from './GanttTableRow';
 import { LoadingState } from './LoadingState';
@@ -8,11 +9,11 @@ interface TaskNodeProps {
   task: Task;
   allTasks: Task[];
   depth: number;
-  onAddTask: () => void;
+  columnWidths: ColumnWidths;
 }
 
 // Recursive component to handle hierarchy
-function TaskNode({ task, allTasks, depth, onAddTask }: TaskNodeProps) {
+function TaskNode({ task, allTasks, depth, columnWidths }: TaskNodeProps) {
   const expandedIds = useDashboardStore((state) => state.expandedIds);
   const isExpanded = !!expandedIds[task.id];
   
@@ -26,23 +27,21 @@ function TaskNode({ task, allTasks, depth, onAddTask }: TaskNodeProps) {
         depth={depth} 
         isExpanded={isExpanded} 
         hasChildren={hasChildren}
-        onAddTask={onAddTask}
+        columnWidths={columnWidths}
       />
       
       {isExpanded && hasChildren && children.map((child) => (
-        <TaskNode key={child.id} task={child} allTasks={allTasks} depth={depth + 1} onAddTask={onAddTask} />
+        <TaskNode key={child.id} task={child} allTasks={allTasks} depth={depth + 1} columnWidths={columnWidths} />
       ))}
     </>
   );
 }
 
 interface GanttTableBodyProps {
-  onAddTask: () => void;
+  columnWidths: ColumnWidths;
 }
 
-export function GanttTableBody({
-  onAddTask,
-}: GanttTableBodyProps) {
+export function GanttTableBody({ columnWidths }: GanttTableBodyProps) {
   const tasks = useDashboardStore((state) => state.tasks);
   const isLoading = useDashboardStore(selectDashboardIsLoading);
   
@@ -59,7 +58,7 @@ export function GanttTableBody({
   return (
     <div className="flex-1 w-full bg-background">
       {rootTasks.map((task) => (
-        <TaskNode key={task.id} task={task} allTasks={tasks} depth={0} onAddTask={onAddTask} />
+        <TaskNode key={task.id} task={task} allTasks={tasks} depth={0} columnWidths={columnWidths} />
       ))}
     </div>
   );

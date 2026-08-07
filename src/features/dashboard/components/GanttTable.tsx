@@ -1,17 +1,22 @@
+import { useState } from 'react';
 import { GanttTableHeader } from './GanttTableHeader';
 import { GanttTableBody } from './GanttTableBody';
+import { getInitialColumnWidths, type ColumnWidths } from '../constants';
 
-interface GanttTableProps {
-  onAddTask: () => void;
-}
+export function GanttTable() {
+  const [columnWidths, setColumnWidths] = useState<ColumnWidths>(getInitialColumnWidths);
 
-export function GanttTable({
-  onAddTask,
-}: GanttTableProps) {
+  const updateColumnWidth = (columnId: string, width: number) => {
+    setColumnWidths((prev) => ({
+      ...prev,
+      [columnId]: width,
+    }));
+  };
+
   return (
     <div className="flex flex-col h-full bg-background relative text-sm w-max min-w-full">
-      <GanttTableHeader />
-      <GanttTableBody onAddTask={onAddTask} />
+      <GanttTableHeader columnWidths={columnWidths} onColumnResize={updateColumnWidth} />
+      <GanttTableBody columnWidths={columnWidths} />
     </div>
   );
 }

@@ -1,4 +1,3 @@
-import { GANTT_COLUMNS } from '../constants';
 import {
   Tooltip,
   TooltipContent,
@@ -9,9 +8,10 @@ import {
 interface DurationCellProps {
   startDate: string;
   endDate: string;
+  width: number;
 }
 
-export function DurationCell({ startDate, endDate }: DurationCellProps) {
+export function DurationCell({ startDate, endDate, width }: DurationCellProps) {
   const durationMs = new Date(endDate).getTime() - new Date(startDate).getTime();
   const totalHours = Math.max(0, Math.floor(durationMs / (60 * 60 * 1000)));
   const days = Math.floor(totalHours / 24);
@@ -30,7 +30,7 @@ export function DurationCell({ startDate, endDate }: DurationCellProps) {
   return (
     <div
       className="p-2 border-r border-border truncate h-full flex items-center flex-shrink-0 text-muted-foreground"
-      style={{ width: GANTT_COLUMNS[3].width }}
+      style={{ width }}
     >
       <TooltipProvider delayDuration={1150}>
         <Tooltip>

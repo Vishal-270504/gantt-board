@@ -1,15 +1,76 @@
-import { GANTT_COLUMNS } from '../constants';
+import { useEffect, useRef, useState } from 'react';
+import { GANTT_COLUMNS, type ColumnWidths } from '../constants';
 
-export function GanttTableHeader() {
+interface GanttTableHeaderProps {
+  columnWidths: ColumnWidths;
+  onColumnResize: (columnId: string, width: number) => void;
+}
+
+const MIN_COLUMN_WIDTH = 80;
+
+export function GanttTableHeader({ columnWidths, onColumnResize }: GanttTableHeaderProps) {
+  const [resizingColumn, setResizingColumn] = useState<string | null>(null);
+  const dragState = useRef<{
+    columnId: string;
+    startX: number;
+    startWidth: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!resizingColumn) return;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    const previousOverflow = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = 'hidden';
+    return () => {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.documentElement.style.overflow = previousOverflow;
+    };
+  }, [resizingColumn]);
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragState.current) return;
+    const delta = e.clientX - dragState.current.startX;
+    const nextWidth = Math.max(MIN_COLUMN_WIDTH, dragState.current.startWidth + delta);
+    onColumnResize(dragState.current.columnId, nextWidth);
+  };
+
+  const stopResize = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragState.current) return;
+    dragState.current = null;
+    setResizingColumn(null);
+    e.currentTarget.releasePointerCapture(e.pointerId);
+  };
+
+  const startResize = (e: React.PointerEvent<HTMLDivElement>, columnId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragState.current = {
+      columnId,
+      startX: e.clientX,
+      startWidth: columnWidths[columnId],
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setResizingColumn(columnId);
+  };
+
   return (
     <div className="sticky top-0 z-10 flex bg-muted/90 backdrop-blur-sm border-b border-border text-sm font-medium text-muted-foreground w-max min-w-full h-12">
       {GANTT_COLUMNS.map((col) => (
         <div
           key={col.id}
-          className="p-2 border-r border-border last:border-r-0 truncate flex-shrink-0 h-full flex items-center"
-          style={{ width: col.width }}
+          className="p-2 border-r border-border last:border-r-0 truncate flex-shrink-0 h-full flex items-center relative"
+          style={{ width: columnWidths[col.id] }}
         >
           {col.label}
+          <div
+            className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize active:bg-primary/40 hover:bg-primary/30"
+            onPointerDown={(e) => startResize(e, col.id)}
+            onPointerMove={handlePointerMove}
+            onPointerUp={stopResize}
+            onPointerCancel={stopResize}
+          />
         </div>
       ))}
     </div>

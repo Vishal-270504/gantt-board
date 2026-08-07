@@ -1,19 +1,18 @@
 import type { Task } from '../types';
-// import { GANTT_COLUMNS } from '../constants';
+import type { ColumnWidths } from '../constants';
 import { TaskNameCell } from './TaskNameCell';
 import { StartDateCell } from './StartDateCell';
 import { EndDateCell } from './EndDateCell';
 import { DurationCell } from './DurationCell';
 import { ProgressCell } from './ProgressCell';
 import { PredecessorCell } from './PredecessorCell';
-import { AddTaskButton } from './AddTaskButton';
 
 interface GanttTableRowProps {
   task: Task;
   depth: number;
   isExpanded: boolean;
   hasChildren: boolean;
-  onAddTask: () => void;
+  columnWidths: ColumnWidths;
 }
 
 export function GanttTableRow({
@@ -21,7 +20,7 @@ export function GanttTableRow({
   depth,
   isExpanded,
   hasChildren,
-  onAddTask,
+  columnWidths,
 }: GanttTableRowProps) {
   return (
     <div className="flex border-b border-border hover:bg-muted/50 transition-colors text-sm items-center h-10 w-max min-w-full">
@@ -31,29 +30,23 @@ export function GanttTableRow({
         depth={depth} 
         isExpanded={isExpanded} 
         hasChildren={hasChildren} 
+        width={columnWidths.title}
       />
 
       {/* Start Date */}
-      <StartDateCell dateString={task.startDate} />
+      <StartDateCell dateString={task.startDate} width={columnWidths.startDate} />
 
       {/* End Date */}
-      <EndDateCell dateString={task.endDate} />
+      <EndDateCell dateString={task.endDate} width={columnWidths.endDate} />
 
       {/* Duration */}
-      <DurationCell startDate={task.startDate} endDate={task.endDate} />
+      <DurationCell startDate={task.startDate} endDate={task.endDate} width={columnWidths.duration} />
 
       {/* Progress */}
-      <ProgressCell progress={task.progress} />
+      <ProgressCell progress={task.progress} width={columnWidths.progress} />
 
       {/* Predecessor */}
-      <PredecessorCell predecessorIds={task.predecessors || []} />
-
-      <div
-        className="flex items-center justify-center flex-shrink-0 border-l border-border"
-        style={{ width: 140 }}
-      >
-        <AddTaskButton onClick={onAddTask} />
-      </div>
+      <PredecessorCell predecessorIds={task.predecessors || []} width={columnWidths.predecessor} />
     </div>
   );
 }

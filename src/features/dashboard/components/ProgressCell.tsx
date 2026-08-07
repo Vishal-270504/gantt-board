@@ -1,14 +1,13 @@
-import { GANTT_COLUMNS } from '../constants';
-
 interface ProgressCellProps {
   progress: number;
+  width: number;
 }
 
-export function ProgressCell({ progress }: ProgressCellProps) {
+export function ProgressCell({ progress, width }: ProgressCellProps) {
   return (
     <div
       className="p-2 border-r border-border truncate h-full flex items-center flex-shrink-0"
-      style={{ width: GANTT_COLUMNS[4].width }}
+      style={{ width }}
     >
       <div className="flex items-center w-full gap-2">
         <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
