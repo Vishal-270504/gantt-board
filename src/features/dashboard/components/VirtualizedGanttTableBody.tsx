@@ -40,7 +40,7 @@ export function VirtualizedGanttTableBody({
     return () => observer.disconnect();
   }, []);
 
-  const { visibleTasks, totalHeight, scrollTop, onScroll: handleScroll } =
+  const { visibleTasks, totalHeight, onScroll: handleScroll } =
     useVirtualizedRows(positionedTasks, containerHeight);
 
   // Bidirectional scroll sync: if timeline scrolls, we follow
