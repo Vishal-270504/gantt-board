@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   useDashboardStore,
   selectTimelineStart,
@@ -7,7 +8,6 @@ import {
   selectScale,
 } from "../dashboard/store/useDashboardStore";
 import { useGanttController, ROW_HEIGHT } from "./useGanttController";
-import { useVirtualizedRows } from "./useVirtualizedRows";
 import { TimelineHeader } from "../../components/ui/TimelineHeader";
 import { TimelineGrid } from "../../components/ui/TimelineGrid.tsx";
 import { TaskBar } from "../../components/ui/Taskbar.tsx";
@@ -27,20 +27,24 @@ export function Timeline({ syncScrollTop, onScroll }: TimelineProps) {
   const timelineEnd = useDashboardStore(selectTimelineEnd);
   const scale = useDashboardStore(selectScale);
   const tasks = useDashboardStore((s) => s.tasks);
-  const positionedTasks = useGanttController();
+  const rows = useGanttController();
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const didScrollRef = useRef<string | null>(null);
+  const [viewportEl, setViewportEl] = useState<HTMLElement | null>(null);
   const [containerHeight, setContainerHeight] = useState(600);
+  const [scrollTop, setScrollTop] = useState(0);
 
-  // Measure the timeline viewport height
+  // Resolve the scroll-area viewport (the virtualization scroll element)
+  // and keep measuring its height for the grid's visible-row range.
   useEffect(() => {
-    const el = scrollAreaRef.current;
-    if (!el) return;
-    const viewport = el.querySelector(
+    const container = scrollAreaRef.current;
+    if (!container) return;
+    const viewport = container.querySelector(
       '[data-slot="scroll-area-viewport"]',
     ) as HTMLElement | null;
     if (!viewport) return;
+    setViewportEl(viewport);
 
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -51,8 +55,16 @@ export function Timeline({ syncScrollTop, onScroll }: TimelineProps) {
     return () => observer.disconnect();
   }, []);
 
-  const { visibleTasks, totalHeight, scrollTop, onScroll: handleVirtualScroll } =
-    useVirtualizedRows(positionedTasks, containerHeight);
+  // Initialize TanStack Virtual, bound to the same viewport used for scroll sync
+  const virtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => viewportEl,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 10, // Render extra rows outside the viewport for smoother scrolling
+  });
+
+  const virtualItems = virtualizer.getVirtualItems();
+  const totalSize = virtualizer.getTotalSize();
 
   // Horizontal scroll-to-earliest-task on scale change
   useEffect(() => {
@@ -86,31 +98,38 @@ export function Timeline({ syncScrollTop, onScroll }: TimelineProps) {
 
   // Bidirectional scroll sync: if table scrolls, we follow
   useEffect(() => {
-    if (syncScrollTop === undefined) return;
-    const container = scrollAreaRef.current;
-    if (!container) return;
-    const viewport = container.querySelector(
-      '[data-slot="scroll-area-viewport"]',
-    ) as HTMLElement | null;
-    if (!viewport) return;
-    if (Math.abs(viewport.scrollTop - syncScrollTop) > 1) {
-      viewport.scrollTop = syncScrollTop;
+    if (syncScrollTop === undefined || !viewportEl) return;
+    if (Math.abs(viewportEl.scrollTop - syncScrollTop) > 1) {
+      viewportEl.scrollTop = syncScrollTop;
     }
-  }, [syncScrollTop]);
+  }, [syncScrollTop, viewportEl]);
 
   // Report our scroll back to parent (table follows us)
   const handleLocalScroll = useCallback(
     (e: React.UIEvent<HTMLDivElement>) => {
-      const st = e.currentTarget.scrollTop;
-      handleVirtualScroll(e);
+      const st = viewportEl?.scrollTop ?? e.currentTarget.scrollTop;
+      virtualizer.measure(); // Keep the virtualizer in sync with the scroll offset
+      setScrollTop(st);
       onScroll?.(st);
     },
-    [handleVirtualScroll, onScroll],
+    [viewportEl, virtualizer, onScroll],
   );
+
+  const renderedRows = virtualItems
+    .filter((vi) => vi.index < rows.length)
+    .map((vi) => ({
+      ...rows[vi.index],
+      top: vi.start,
+      rowHeight: ROW_HEIGHT,
+    }));
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <div ref={scrollAreaRef} className="flex-1 overflow-hidden">
+      <div
+        ref={scrollAreaRef}
+        className="flex-1 overflow-hidden"
+        onScroll={handleLocalScroll}
+      >
         <ScrollArea className="h-full">
           <div className="relative w-max min-w-full">
             <TimelineHeader
@@ -121,45 +140,41 @@ export function Timeline({ syncScrollTop, onScroll }: TimelineProps) {
             {/* pt-12 pushes grid content below the sticky header */}
             <div className="relative pt-12">
               {/* Virtualized content wrapper */}
-              <div
-                style={{ height: totalHeight, position: "relative" }}
-                onScroll={handleLocalScroll}
-              >
+              <div style={{ height: totalSize, position: "relative" }}>
                 <TimelineGrid
                   startDate={timelineStart}
                   endDate={timelineEnd}
                   scale={scale}
                   rowHeight={ROW_HEIGHT}
-                  rowCount={positionedTasks.length}
+                  rowCount={rows.length}
                   scrollTop={scrollTop}
                   containerHeight={containerHeight}
                 />
-                <DependencyArrows
-                  tasks={visibleTasks}
-                  rowHeight={ROW_HEIGHT}
-                />
-                {visibleTasks.map((t) =>
-                  t.type === "milestone" ? (
+                <DependencyArrows tasks={renderedRows} rowHeight={ROW_HEIGHT} />
+                {virtualItems.map((vi) => {
+                  if (vi.index >= rows.length) return null;
+                  const row = rows[vi.index];
+                  return row.type === "milestone" ? (
                     <MilestoneMarker
-                      key={t.id}
-                      left={t.left}
-                      top={t.top}
-                      title={t.title}
+                      key={row.id}
+                      left={row.left}
+                      top={vi.start}
+                      title={row.title}
                     />
                   ) : (
                     <TaskBar
-                      key={t.id}
-                      left={t.left}
-                      width={t.width}
-                      top={t.top}
-                      height={t.rowHeight - 8}
-                      progress={t.progress}
-                      title={t.title}
-                      assignee={t.assignee}
-                      type={t.type}
+                      key={row.id}
+                      left={row.left}
+                      width={row.width}
+                      top={vi.start}
+                      height={ROW_HEIGHT - 8}
+                      progress={row.progress}
+                      title={row.title}
+                      assignee={row.assignee}
+                      type={row.type}
                     />
-                  ),
-                )}
+                  );
+                })}
               </div>
             </div>
           </div>
