@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { GANTT_COLUMNS, type ColumnWidths } from '../constants';
+import { useDashboardStore, selectVisibleColumns } from '../store/useDashboardStore';
 
 interface GanttTableHeaderProps {
-  columnWidths: ColumnWidths;
+  widths: ColumnWidths;
   onColumnResize: (columnId: string, width: number) => void;
 }
 
 const MIN_COLUMN_WIDTH = 80;
 
-export function GanttTableHeader({ columnWidths, onColumnResize }: GanttTableHeaderProps) {
+export function GanttTableHeader({ widths, onColumnResize }: GanttTableHeaderProps) {
+  const visibleColumns = useDashboardStore(selectVisibleColumns);
   const [resizingColumn, setResizingColumn] = useState<string | null>(null);
   const dragState = useRef<{
     columnId: string;
@@ -49,19 +51,21 @@ export function GanttTableHeader({ columnWidths, onColumnResize }: GanttTableHea
     dragState.current = {
       columnId,
       startX: e.clientX,
-      startWidth: columnWidths[columnId],
+      startWidth: widths[columnId],
     };
     e.currentTarget.setPointerCapture(e.pointerId);
     setResizingColumn(columnId);
   };
 
+  const visibleCols = GANTT_COLUMNS.filter((col) => visibleColumns.includes(col.id));
+
   return (
     <div className="sticky top-0 z-10 flex bg-muted/90 backdrop-blur-sm border-b border-border text-sm font-medium text-muted-foreground w-max min-w-full h-12">
-      {GANTT_COLUMNS.map((col) => (
+      {visibleCols.map((col) => (
         <div
           key={col.id}
           className="p-2 border-r border-border last:border-r-0 truncate flex-shrink-0 h-full flex items-center relative"
-          style={{ width: columnWidths[col.id] }}
+          style={{ width: widths[col.id] }}
         >
           {col.label}
           <div

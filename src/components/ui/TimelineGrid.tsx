@@ -1,7 +1,6 @@
-import { SCALE_CONFIGS, getOffset } from '../../features/Timeline/ScaleConfig';
-import type { TimelineScale } from '../../features/dashboard/types';
-import { cn } from '@/lib/utils';
-import type { CSSProperties } from 'react';
+import { useMemo } from "react";
+import { getGridConfig } from "../../features/Timeline/ScaleConfig";
+import type { TimelineScale } from "../../features/dashboard/types";
 
 interface TimelineGridProps {
   startDate: Date;
@@ -9,57 +8,52 @@ interface TimelineGridProps {
   scale: TimelineScale;
   rowHeight: number;
   rowCount: number;
+  scrollTop: number;
+  containerHeight: number;
 }
 
-export function TimelineGrid({ startDate, endDate, scale, rowHeight, rowCount }: TimelineGridProps) {
-  const config = SCALE_CONFIGS[scale];
-  const units = config.getUnits(startDate, endDate);
-  const todayLeft = getOffset(new Date(), startDate, scale);
+export function TimelineGrid({
+  startDate,
+  endDate,
+  scale,
+  rowHeight,
+  rowCount,
+  scrollTop,
+  containerHeight,
+}: TimelineGridProps) {
+  const config = useMemo(
+    () => getGridConfig(startDate, endDate, scale),
+    [startDate, endDate, scale],
+  );
 
-  const containerStyle = {
-    '--grid-w': `${units.length * config.unitWidth}px`,
-    '--grid-h': `${rowCount * rowHeight}px`,
-  } as CSSProperties;
+  // Only render visible rows
+  const startRow = Math.max(0, Math.floor(scrollTop / rowHeight));
+  const endRow = Math.min(
+    rowCount - 1,
+    Math.ceil((scrollTop + containerHeight) / rowHeight),
+  );
 
   return (
-    <div className="relative w-[var(--grid-w)] h-[var(--grid-h)]" style={containerStyle}>
-      {units.map((u, i) => {
-        const colStyle = {
-          '--col-left': `${i * config.unitWidth}px`,
-          '--col-w': `${config.unitWidth}px`,
-        } as CSSProperties;
-        return (
+    <div className="absolute inset-0 pointer-events-none">
+      {/* Vertical time grid lines */}
+      {config.lines.map((line, i) => (
+        <div
+          key={`v-${i}`}
+          className="absolute top-0 bottom-0 border-l"
+          style={{ left: line.offset }}
+        />
+      ))}
+
+      {/* Horizontal row grid lines - only visible rows */}
+      {Array.from({ length: endRow - startRow + 1 }, (_, i) => startRow + i).map(
+        (rowIndex) => (
           <div
-            key={i}
-            className={cn(
-              'absolute top-0 bottom-0 border-r border-border/60 left-[var(--col-left)] w-[var(--col-w)]',
-              isToday(u) && 'bg-primary/5'
-            )}
-            style={colStyle}
+            key={`h-${rowIndex}`}
+            className="absolute left-0 right-0 border-b"
+            style={{ top: rowIndex * rowHeight }}
           />
-        );
-      })}
-      {Array.from({ length: rowCount }).map((_, i) => {
-        const rowStyle = {
-          '--row-top': `${i * rowHeight}px`,
-          '--row-h': `${rowHeight}px`,
-        } as CSSProperties;
-        return (
-          <div
-            key={i}
-            className="absolute left-0 right-0 border-b border-border/40 top-[var(--row-top)] h-[var(--row-h)]"
-            style={rowStyle}
-          />
-        );
-      })}
-      <div
-        className="absolute top-0 bottom-0 w-px bg-red-500 left-[var(--today-left)]"
-        style={{ '--today-left': `${todayLeft}px` } as CSSProperties}
-      />
+        ),
+      )}
     </div>
   );
-}
-
-function isToday(d: Date) {
-  return d.toDateString() === new Date().toDateString();
 }

@@ -5,15 +5,17 @@ export default function App() {
     <div className="min-h-screen w-full">
       <DashboardLayout
         tasks={mockTasks}
-        styleOptions={{ rowHeight: 40 }}
-        // displayOptions={{ scale: "week" }}
+        styleOptions={{
+          rowHeight: 40,
+          taskBar: {
+            barColor: "indigo",
+            progressColor: "emerald",
+            radius: 'full',
+          },
+        }}
+        
+        displayOptions={{ scale: "day" }}
       />
     </div>
   );
 }
-// taskBar: {
-    //   barColor: "indigo",
-    //   progressColor: "emerald",
-    //   radius: 8,
-    //   height: 24,
-    // },

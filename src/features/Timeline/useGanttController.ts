@@ -1,8 +1,14 @@
-import { useMemo } from 'react';
-import { useDashboardStore, selectDashboardTasks, selectExpandedIds, selectScale, selectTimelineStart } from '../dashboard/store/useDashboardStore';
-import { getOffset } from './ScaleConfig';
-import { toDate } from '../../lib/dateutils';
-import type { PositionedTask, VisibleTask } from '../dashboard/types';
+import { useMemo } from "react";
+import {
+  useDashboardStore,
+  selectDashboardTasks,
+  selectExpandedIds,
+  selectScale,
+  selectTimelineStart,
+} from "../dashboard/store/useDashboardStore";
+import { getOffset } from "./ScaleConfig";
+import { toDate } from "../../lib/dateutils";
+import type { PositionedTask, VisibleTask } from "../dashboard/types";
 
 const ROW_HEIGHT = 40;
 
@@ -16,7 +22,7 @@ export function useGanttController(): PositionedTask[] {
     const byParent: Record<string, typeof tasks> = {};
 
     tasks.forEach((t) => {
-      const key = t.parentId ?? 'root';
+      const key = t.parentId ?? "root";
       (byParent[key] ??= []).push(t);
     });
 
@@ -30,18 +36,21 @@ export function useGanttController(): PositionedTask[] {
       });
     };
 
-    walk('root', 0);
+    walk("root", 0);
 
     return visibleTasks.map((task, index) => {
       const taskStart = toDate(task.startDate);
       const taskEnd = toDate(task.endDate);
-      // Add 1 day so the tile ends ON the end date (not the day before)
-      const taskEndInclusive = task.type === 'milestone'
-        ? taskEnd
-        : new Date(taskEnd.getTime() + 86_400_000);
+      const taskEndInclusive =
+        task.type === "milestone"
+          ? taskEnd
+          : new Date(taskEnd.getTime() + 86_400_000);
 
       const left = getOffset(taskStart, timelineStart, scale);
-      const width = task.type === 'milestone' ? 0 : getOffset(taskEndInclusive, taskStart, scale);
+      const width =
+        task.type === "milestone"
+          ? 0
+          : getOffset(taskEndInclusive, taskStart, scale);
 
       return {
         ...task,
@@ -53,4 +62,5 @@ export function useGanttController(): PositionedTask[] {
     });
   }, [tasks, expandedIds, scale, timelineStart]);
 }
-
+
+export { ROW_HEIGHT };

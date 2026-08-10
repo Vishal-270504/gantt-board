@@ -2,10 +2,6 @@
 
 A React-based Gantt Chart component supporting hierarchical tasks, timeline scaling (Hour, Day, Week, Month, Quarter, Year), dependency visualization, milestones, progress tracking, and expandable task trees.
 
-# Install
-
-npm intall gantt-board
-
 # Quick Start
 
 ```tsx
@@ -25,7 +21,6 @@ function App() {
             barColor: "blue",
             progressColor: "emerald",
             radius: 6,
-            height: 32,
             },
         }}
     />
@@ -77,7 +72,6 @@ interface DashboardLayoutProps {
       barColor?: Color;
       progressColor?: Color;
       radius?: number;
-      height?: number;
     };
   };
 }
@@ -115,31 +109,8 @@ interface DashboardLayoutProps {
 | --------------- | --------------------------------------------------------------------------------------- | -------- | ---------------------------------------------- |
 | `barColor`      | `"slate" \| "blue" \| "indigo" \| "emerald" \| "amber" \| "rose" \| "violet" \| "cyan"` | `"blue"` | Main color of the task bar                     |
 | `progressColor` | `"slate" \| "blue" \| "indigo" \| "emerald" \| "amber" \| "rose" \| "violet" \| "cyan"` | `"blue"` | Color of the progress fill inside the task bar |
-| `radius`        | `none \| full \| sm \| md \| lg`                                                        | `full`   | Border radius of the task bar                  |
+| `radius`        | `none \| md \| sm \| md \| lg`                                                        | `full`   | Border radius of the task bar                  |
 
-# Architecture
-
-```text
-DashboardLayout
-│
-├── GanttTable
-│   ├── GanttTableHeader
-│   └── GanttTableBody
-│       └── GanttTableRow
-│           ├── TaskNameCell
-│           ├── StartDateCell
-│           ├── EndDateCell
-│           ├── DurationCell
-│           ├── ProgressCell
-│           └── PredecessorCell
-│
-└── Timeline
-    ├── TimelineHeader
-    ├── TimelineGrid
-    ├── TaskBar
-    ├── MilestoneMarker
-    └── DependencyArrows
-```
 
 # Core Types
 

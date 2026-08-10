@@ -120,3 +120,27 @@ export function getOffset(date: Date, base: Date, scale: TimelineScale): number 
   const { unitWidth, msPerUnit } = SCALE_CONFIGS[scale];
   return ((date.getTime() - base.getTime()) / msPerUnit) * unitWidth;
 }
+
+export interface GridLine {
+  offset: number;
+}
+
+export interface GridConfig {
+  lines: GridLine[];
+}
+
+// Returns vertical grid lines at every unit boundary of the requested scale.
+export function getGridConfig(
+  start: Date,
+  end: Date,
+  scale: TimelineScale,
+): GridConfig {
+  const { unitWidth } = SCALE_CONFIGS[scale];
+  const units = SCALE_CONFIGS[scale].getUnits(start, end);
+  const lines: GridLine[] = [];
+  units.forEach((_u, i) => {
+    lines.push({ offset: i * unitWidth });
+  });
+  lines.push({ offset: units.length * unitWidth });
+  return { lines };
+}

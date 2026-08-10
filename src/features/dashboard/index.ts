@@ -4,7 +4,7 @@ export * from './mockData';
 export * from './components/GanttTable';
 export * from './components/GanttTableHeader';
 export * from './components/GanttTableRow';
-export * from './components/GanttTableBody';
+export * from './components/VirtualizedGanttTableBody';
 export * from './components/TaskNameCell';
 export * from './components/StartDateCell';
 export * from './components/EndDateCell';

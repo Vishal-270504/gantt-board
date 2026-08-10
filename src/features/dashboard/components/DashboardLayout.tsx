@@ -1,8 +1,8 @@
 import { GanttTable } from "./GanttTable";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Timeline } from "@/features/Timeline/Timeline";
 import { ScaleNavbar } from "./ScaleNavbar";
-import type { Task, TimelineScale } from "../types";
+import type { Task, TimelineScale, GanttColor, TaskbarRadiusType } from "../types";
 import { useDashboardStore } from "../store/useDashboardStore";
 
 const MIN_LEFT_PANEL_WIDTH = 300;
@@ -15,6 +15,11 @@ interface DashboardLayoutProps {
   };
   styleOptions?: {
     rowHeight?: number;
+    taskBar?: {
+      barColor?: GanttColor;
+      progressColor?: GanttColor;
+      radius?: TaskbarRadiusType;
+    };
   };
 }
 
@@ -26,25 +31,48 @@ export function DashboardLayout({
   const setTasks = useDashboardStore((s) => s.setTasks);
   const setScale = useDashboardStore((s) => s.setScale);
   const setRowHeight = useDashboardStore((s) => s.setRowHeight);
+  const setCustomization = useDashboardStore((s) => s.setCustomization
+  )
 
   useEffect(() => {
     setTasks(tasks);
-    
-    if(displayOptions?.scale) {
+
+    if (displayOptions?.scale) {
       setScale(displayOptions.scale);
     }
 
-    if(styleOptions?.rowHeight) {
-      setRowHeight(styleOptions.rowHeight)
+    if (styleOptions?.rowHeight) {
+      setRowHeight(styleOptions.rowHeight);
     }
 
-  })
+    setCustomization({
+      taskBarColor: styleOptions?.taskBar?.barColor,
+      taskBarProgressColor: styleOptions?.taskBar?.progressColor,
+      taskBarRadius: styleOptions?.taskBar?.radius,
+    });
+  });
 
   const tableRef = useRef<HTMLElement>(null);
   const timelineContainerRef = useRef<HTMLDivElement>(null);
   const [leftPanelWidth, setLeftPanelWidth] = useState(400);
   const [isResizing, setIsResizing] = useState(false);
   const dragState = useRef<{ startX: number; startWidth: number } | null>(null);
+
+  // Shared scroll state for bidirectional sync
+  const [sharedScrollTop, setSharedScrollTop] = useState(0);
+  const [lastSource, setLastSource] = useState<"table" | "timeline" | null>(
+    null,
+  );
+
+  const handleTableScroll = useCallback((scrollTop: number) => {
+    setLastSource("table");
+    setSharedScrollTop(scrollTop);
+  }, []);
+
+  const handleTimelineScroll = useCallback((scrollTop: number) => {
+    setLastSource("timeline");
+    setSharedScrollTop(scrollTop);
+  }, []);
 
   useEffect(() => {
     if (!isResizing) return;
@@ -58,62 +86,6 @@ export function DashboardLayout({
       document.documentElement.style.overflow = previousOverflow;
     };
   }, [isResizing]);
-
-  useEffect(() => {
-    const tableEl = tableRef.current;
-    const containerEl = timelineContainerRef.current;
-    if (!tableEl || !containerEl) return;
-
-    // Find the actual scrollable viewport inside Radix ScrollArea
-    const timelineViewport = containerEl.querySelector(
-      '[data-slot="scroll-area-viewport"]',
-    ) as HTMLElement;
-    if (!timelineViewport) return;
-
-    let activeEl: HTMLElement | null = null;
-
-    const handleTableScroll = () => {
-      if (activeEl && activeEl !== tableEl) return;
-      activeEl = tableEl;
-      timelineViewport.scrollTop = tableEl.scrollTop;
-    };
-
-    const handleTimelineScroll = () => {
-      if (activeEl && activeEl !== timelineViewport) return;
-      activeEl = timelineViewport;
-      tableEl.scrollTop = timelineViewport.scrollTop;
-    };
-
-    const handleTouchStart = (e: TouchEvent) => {
-      activeEl = e.currentTarget as HTMLElement;
-    };
-
-    const handleMouseEnter = (e: MouseEvent) => {
-      activeEl = e.currentTarget as HTMLElement;
-    };
-
-    tableEl.addEventListener("scroll", handleTableScroll, { passive: true });
-    timelineViewport.addEventListener("scroll", handleTimelineScroll, {
-      passive: true,
-    });
-    tableEl.addEventListener("touchstart", handleTouchStart, { passive: true });
-    timelineViewport.addEventListener("touchstart", handleTouchStart, {
-      passive: true,
-    });
-    tableEl.addEventListener("mouseenter", handleMouseEnter, { passive: true });
-    timelineViewport.addEventListener("mouseenter", handleMouseEnter, {
-      passive: true,
-    });
-
-    return () => {
-      tableEl.removeEventListener("scroll", handleTableScroll);
-      timelineViewport.removeEventListener("scroll", handleTimelineScroll);
-      tableEl.removeEventListener("touchstart", handleTouchStart);
-      timelineViewport.removeEventListener("touchstart", handleTouchStart);
-      tableEl.removeEventListener("mouseenter", handleMouseEnter);
-      timelineViewport.removeEventListener("mouseenter", handleMouseEnter);
-    };
-  }, []);
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!dragState.current) return;
@@ -149,20 +121,21 @@ export function DashboardLayout({
       <ScaleNavbar />
 
       <div className="flex flex-1 min-h-0">
-        {/* 
-          Left Panel: Fixed Task Table Container
-          Flex-shrink-0 prevents it from squishing. 
-          Overflow-auto allows independent horizontal/vertical scrolling for the table.
-        */}
+        {/* Left Panel: Fixed Task Table Container */}
         <aside
           ref={tableRef}
-          className="flex-shrink-0 h-full overflow-auto border-r z-10 bg-card"
+          className="flex-shrink-0 h-full overflow-hidden border-r z-10 bg-card flex flex-col"
           style={{ width: leftPanelWidth }}
         >
-          <GanttTable />
+          <GanttTable
+            syncScrollTop={
+              lastSource === "timeline" ? sharedScrollTop : undefined
+            }
+            onScroll={handleTableScroll}
+          />
         </aside>
 
-        {/* Vertical resize handle between the left panel and the timeline */}
+        {/* Vertical resize handle */}
         <div
           className="z-20 w-1.5 cursor-col-resize hover:bg-primary/30 active:bg-primary/40 shrink-0"
           onPointerDown={startResize}
@@ -174,14 +147,15 @@ export function DashboardLayout({
           aria-label="Resize left panel"
         />
 
-        {/* 
-          Right Panel: Timeline Container
-        */}
+        {/* Right Panel: Timeline Container */}
         <main
           ref={timelineContainerRef}
           className="flex-1 h-full overflow-hidden relative bg-muted/20"
         >
-          <Timeline />
+          <Timeline
+            syncScrollTop={lastSource === "table" ? sharedScrollTop : undefined}
+            onScroll={handleTimelineScroll}
+          />
         </main>
       </div>
     </div>
