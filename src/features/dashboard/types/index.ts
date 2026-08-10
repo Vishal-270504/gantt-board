@@ -9,6 +9,10 @@ export type GanttColor =
   | 'violet'
   | 'cyan';
 
+// ── Date/Time Format Options ──
+export type DateFormat = 'DD/MM/YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD' | 'DD MMM YYYY';
+export type TimeFormat = '12-hour' | '24-hour';
+
 // ── Core Task Types ──
 export interface Task {
   id: string;
@@ -40,14 +44,16 @@ export interface GanttCustomization {
   taskBarRadius: 'none' | 'sm' | 'md' | 'lg' | 'full';
   taskBarColor: GanttColor;
   taskBarProgressColor: GanttColor;
-  visibleColumns: string[]; // e.g. ['title', 'startDate', 'endDate', 'progress', 'assignee']
+  visibleColumns: string[];
+  dateFormat: DateFormat;
+  timeFormat: TimeFormat;
 }
 
 // ── Gantt Table Columns ──
 export interface GanttColumn {
   id: string;
   label: string;
-  width: number | string; // e.g. '250px' (CSS) or raw px number
+  width: number | string;
 }
 
 export type ColumnWidths = Record<string, number>;
