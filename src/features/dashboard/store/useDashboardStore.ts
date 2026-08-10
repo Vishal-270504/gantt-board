@@ -36,6 +36,7 @@ interface DashboardState {
   tasks: Task[];
   expandedIds: Record<string, boolean>;
   isLoading: boolean;
+  rowHeight: number;
 
   // timeline attributes
   timelineStart: Date;
@@ -51,6 +52,8 @@ interface DashboardActions {
   expandAll: (ids: string[]) => void;
   collapseAll: () => void;
   setIsLoading: (loading: boolean) => void;
+  setTasks: (tasks: Task[]) => void;
+  setRowHeight: (rowHeight: number) => void;
 
   // timeline attributes
   setTimelineRange: (start: Date, end: Date) => void;
@@ -61,9 +64,10 @@ interface DashboardActions {
 type DashboardStore = DashboardState & DashboardActions;
 
 export const useDashboardStore = create<DashboardStore>((set) => ({
-  tasks: mockTasks,
+  tasks: [],
   expandedIds: {},
   isLoading: false,
+  rowHeight: 40,
 
   // timeline
   timelineStart: initialRange.start,
@@ -103,8 +107,11 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
   collapseAll: () => set(() => ({ expandedIds: {} })),
 
   setIsLoading: (isLoading) => set(() => ({ isLoading })),
+
+  setTasks: (tasks) => set({tasks}),
   
   // timeline
+  setRowHeight: (rowHeight) => set({ rowHeight }),
 
   setTimelineRange: (timelineStart, timelineEnd) => set(() => ({ timelineStart, timelineEnd })),
   setScale: (scale) => set(() => ({ scale })),
@@ -116,6 +123,7 @@ export const selectDashboardTasks = (state: DashboardStore) => state.tasks;
 export const selectDashboardIsLoading = (state: DashboardStore) => state.isLoading;
 export const selectExpandedIds = (state: DashboardStore) => state.expandedIds;
 export const selectIsTaskExpanded = (id: string) => (state: DashboardStore) => !!state.expandedIds[id];
+export const selectRowHeight = (state: DashboardStore) => state.rowHeight;
 
 // timeline - selectors
 export const selectTimelineStart = (state: DashboardStore) => state.timelineStart;

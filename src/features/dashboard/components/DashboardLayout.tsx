@@ -2,11 +2,44 @@ import { GanttTable } from "./GanttTable";
 import { useEffect, useRef, useState } from "react";
 import { Timeline } from "@/features/Timeline/Timeline";
 import { ScaleNavbar } from "./ScaleNavbar";
+import type { Task, TimelineScale } from "../types";
+import { useDashboardStore } from "../store/useDashboardStore";
 
 const MIN_LEFT_PANEL_WIDTH = 300;
 const MAX_LEFT_PANEL_WIDTH = 800;
 
-export function DashboardLayout() {
+interface DashboardLayoutProps {
+  tasks: Task[];
+  displayOptions?: {
+    scale?: TimelineScale;
+  };
+  styleOptions?: {
+    rowHeight?: number;
+  };
+}
+
+export function DashboardLayout({
+  tasks,
+  displayOptions,
+  styleOptions,
+}: DashboardLayoutProps) {
+  const setTasks = useDashboardStore((s) => s.setTasks);
+  const setScale = useDashboardStore((s) => s.setScale);
+  const setRowHeight = useDashboardStore((s) => s.setRowHeight);
+
+  useEffect(() => {
+    setTasks(tasks);
+    
+    if(displayOptions?.scale) {
+      setScale(displayOptions.scale);
+    }
+
+    if(styleOptions?.rowHeight) {
+      setRowHeight(styleOptions.rowHeight)
+    }
+
+  })
+
   const tableRef = useRef<HTMLElement>(null);
   const timelineContainerRef = useRef<HTMLDivElement>(null);
   const [leftPanelWidth, setLeftPanelWidth] = useState(400);
@@ -15,13 +48,13 @@ export function DashboardLayout() {
 
   useEffect(() => {
     if (!isResizing) return;
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
     const previousOverflow = document.documentElement.style.overflow;
-    document.documentElement.style.overflow = 'hidden';
+    document.documentElement.style.overflow = "hidden";
     return () => {
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
       document.documentElement.style.overflow = previousOverflow;
     };
   }, [isResizing]);
@@ -32,7 +65,9 @@ export function DashboardLayout() {
     if (!tableEl || !containerEl) return;
 
     // Find the actual scrollable viewport inside Radix ScrollArea
-    const timelineViewport = containerEl.querySelector('[data-slot="scroll-area-viewport"]') as HTMLElement;
+    const timelineViewport = containerEl.querySelector(
+      '[data-slot="scroll-area-viewport"]',
+    ) as HTMLElement;
     if (!timelineViewport) return;
 
     let activeEl: HTMLElement | null = null;
@@ -57,20 +92,26 @@ export function DashboardLayout() {
       activeEl = e.currentTarget as HTMLElement;
     };
 
-    tableEl.addEventListener('scroll', handleTableScroll, { passive: true });
-    timelineViewport.addEventListener('scroll', handleTimelineScroll, { passive: true });
-    tableEl.addEventListener('touchstart', handleTouchStart, { passive: true });
-    timelineViewport.addEventListener('touchstart', handleTouchStart, { passive: true });
-    tableEl.addEventListener('mouseenter', handleMouseEnter, { passive: true });
-    timelineViewport.addEventListener('mouseenter', handleMouseEnter, { passive: true });
+    tableEl.addEventListener("scroll", handleTableScroll, { passive: true });
+    timelineViewport.addEventListener("scroll", handleTimelineScroll, {
+      passive: true,
+    });
+    tableEl.addEventListener("touchstart", handleTouchStart, { passive: true });
+    timelineViewport.addEventListener("touchstart", handleTouchStart, {
+      passive: true,
+    });
+    tableEl.addEventListener("mouseenter", handleMouseEnter, { passive: true });
+    timelineViewport.addEventListener("mouseenter", handleMouseEnter, {
+      passive: true,
+    });
 
     return () => {
-      tableEl.removeEventListener('scroll', handleTableScroll);
-      timelineViewport.removeEventListener('scroll', handleTimelineScroll);
-      tableEl.removeEventListener('touchstart', handleTouchStart);
-      timelineViewport.removeEventListener('touchstart', handleTouchStart);
-      tableEl.removeEventListener('mouseenter', handleMouseEnter);
-      timelineViewport.removeEventListener('mouseenter', handleMouseEnter);
+      tableEl.removeEventListener("scroll", handleTableScroll);
+      timelineViewport.removeEventListener("scroll", handleTimelineScroll);
+      tableEl.removeEventListener("touchstart", handleTouchStart);
+      timelineViewport.removeEventListener("touchstart", handleTouchStart);
+      tableEl.removeEventListener("mouseenter", handleMouseEnter);
+      timelineViewport.removeEventListener("mouseenter", handleMouseEnter);
     };
   }, []);
 
@@ -113,7 +154,7 @@ export function DashboardLayout() {
           Flex-shrink-0 prevents it from squishing. 
           Overflow-auto allows independent horizontal/vertical scrolling for the table.
         */}
-        <aside 
+        <aside
           ref={tableRef}
           className="flex-shrink-0 h-full overflow-auto border-r z-10 bg-card"
           style={{ width: leftPanelWidth }}
@@ -136,14 +177,13 @@ export function DashboardLayout() {
         {/* 
           Right Panel: Timeline Container
         */}
-        <main 
+        <main
           ref={timelineContainerRef}
           className="flex-1 h-full overflow-hidden relative bg-muted/20"
         >
           <Timeline />
         </main>
       </div>
-
     </div>
   );
 }

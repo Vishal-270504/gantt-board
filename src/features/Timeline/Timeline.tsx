@@ -4,6 +4,7 @@ import {
   selectTimelineStart,
   selectTimelineEnd,
   selectScale,
+  selectRowHeight,
 } from "../dashboard/store/useDashboardStore";
 import { useGanttController } from "./useGanttController";
 import { TimelineHeader } from "../../components/ui/TimelineHeader";
@@ -20,6 +21,7 @@ export function Timeline() {
   const scale = useDashboardStore(selectScale);
   const tasks = useDashboardStore((s) => s.tasks);
   const positionedTasks = useGanttController();
+  const rowHeight = useDashboardStore(selectRowHeight);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   // Track whether we've done initial scroll for the current scale
@@ -71,7 +73,7 @@ export function Timeline() {
                 startDate={timelineStart}
                 endDate={timelineEnd}
                 scale={scale}
-                rowHeight={40}
+                rowHeight={rowHeight}
                 rowCount={positionedTasks.length}
               />
               {/* Dependency arrows */}
