@@ -1,4 +1,4 @@
-import type { GanttColumn, ColumnWidths, GanttCustomization, GanttColor } from './types';
+import type { GanttColumn, ColumnWidths, GanttCustomization, GanttColor, DateFormat, TimeFormat } from './types';
 
 // Re-export column types consumed elsewhere in the dashboard
 export type { GanttColumn, ColumnWidths };
@@ -13,6 +13,20 @@ export const GANTT_COLORS: GanttColor[] = [
   'rose',
   'violet',
   'cyan',
+];
+
+// ── Allowed Date Formats ──
+export const GANTT_DATE_FORMATS: DateFormat[] = [
+  'DD/MM/YYYY',
+  'MM/DD/YYYY',
+  'YYYY-MM-DD',
+  'DD MMM YYYY',
+];
+
+// ── Allowed Time Formats ──
+export const GANTT_TIME_FORMATS: TimeFormat[] = [
+  '12-hour',
+  '24-hour',
 ];
 
 // ── Allowed Radius Options ──
@@ -30,6 +44,8 @@ export const DEFAULT_GANTT_CUSTOMIZATION: GanttCustomization = {
   taskBarColor: 'blue',
   taskBarProgressColor: 'indigo',
   visibleColumns: ['title', 'startDate', 'endDate', 'duration', 'progress', 'predecessor'],
+  dateFormat: 'DD MMM YYYY',
+  timeFormat: '24-hour',
 };
 
 // ── Column Definitions ──
