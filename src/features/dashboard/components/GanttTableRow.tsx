@@ -1,12 +1,12 @@
-import type { Task } from '../types';
-import type { ColumnWidths } from '../constants';
-import { useDashboardStore, selectVisibleColumns } from '../store/useDashboardStore';
-import { TaskNameCell } from './TaskNameCell';
-import { StartDateCell } from './StartDateCell';
-import { EndDateCell } from './EndDateCell';
-import { DurationCell } from './DurationCell';
-import { ProgressCell } from './ProgressCell';
-import { PredecessorCell } from './PredecessorCell';
+import type { Task } from "../types";
+import type { ColumnWidths } from "../constants";
+import { useDashboardStore, selectVisibleColumns } from "../store/useDashboardStore";
+import { TaskNameCell } from "./TaskNameCell";
+import { StartDateCell } from "./StartDateCell";
+import { EndDateCell } from "./EndDateCell";
+import { DurationCell } from "./DurationCell";
+import { ProgressCell } from "./ProgressCell";
+import { PredecessorCell } from "./PredecessorCell";
 
 interface GanttTableRowProps {
   task: Task;
@@ -14,6 +14,8 @@ interface GanttTableRowProps {
   isExpanded: boolean;
   hasChildren: boolean;
   widths: ColumnWidths;
+  /** Absolute positioning style injected by virtualizer */
+  style?: React.CSSProperties;
 }
 
 export function GanttTableRow({
@@ -22,6 +24,7 @@ export function GanttTableRow({
   isExpanded,
   hasChildren,
   widths,
+  style,
 }: GanttTableRowProps) {
   const visibleColumns = useDashboardStore(selectVisibleColumns);
 
@@ -79,7 +82,10 @@ export function GanttTableRow({
     .filter(Boolean);
 
   return (
-    <div className="flex border-b border-border hover:bg-muted/50 transition-colors text-sm items-center w-max min-w-full h-10">
+    <div
+      className="flex border-b border-border hover:bg-muted/50 transition-colors text-sm items-center w-max min-w-full"
+      style={style}
+    >
       {cells}
     </div>
   );

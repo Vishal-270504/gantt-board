@@ -1,32 +1,29 @@
-import { useState } from 'react';
-import { GanttTableHeader } from './GanttTableHeader';
-import { GanttTableBody } from './GanttTableBody';
-import { getInitialColumnWidths, type ColumnWidths } from '../constants';
+import { useState } from "react";
+import { GanttTableHeader } from "./GanttTableHeader";
+import { VirtualizedGanttTableBody } from "./VirtualizedGanttTableBody";
+import { getInitialColumnWidths } from "../constants";
+import type { ColumnWidths } from "../constants";
 
-export interface ColumnConfig {
-  widths: ColumnWidths;
-  visible: string[];
+interface GanttTableProps {
+  syncScrollTop?: number;
+  onScroll?: (scrollTop: number) => void;
 }
 
-export function GanttTable() {
-  const [columnWidths, setColumnWidths] = useState<ColumnWidths>(getInitialColumnWidths);
+export function GanttTable({ syncScrollTop, onScroll }: GanttTableProps) {
+  const [widths, setWidths] = useState<ColumnWidths>(getInitialColumnWidths);
 
-  const updateColumnWidth = (columnId: string, width: number) => {
-    setColumnWidths((prev) => ({
-      ...prev,
-      [columnId]: width,
-    }));
-  };
-
-  const columnConfig: ColumnConfig = {
-    widths: columnWidths,
-    visible: [], // populated by children via store selector
+  const handleColumnResize = (columnId: string, width: number) => {
+    setWidths((prev) => ({ ...prev, [columnId]: width }));
   };
 
   return (
-    <div className="flex flex-col h-full bg-background relative text-sm w-max min-w-full">
-      <GanttTableHeader widths={columnWidths} onColumnResize={updateColumnWidth} />
-      <GanttTableBody widths={columnWidths} />
+    <div className="flex flex-col h-full">
+      <GanttTableHeader widths={widths} onColumnResize={handleColumnResize} />
+      <VirtualizedGanttTableBody
+        widths={widths}
+        syncScrollTop={syncScrollTop}
+        onScroll={onScroll}
+      />
     </div>
   );
 }

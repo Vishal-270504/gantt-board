@@ -1,10 +1,11 @@
 import { create } from 'zustand';
-import type { Task, GanttCustomization } from '../types';
+import type { Task, GanttCustomization, PositionedTask, VisibleTask, TimelineScale } from '../types';
 import { mockTasks } from '../mockData';
 import { DEFAULT_GANTT_CUSTOMIZATION } from '../constants';
+import { getOffset } from "../../Timeline/ScaleConfig";
+import { toDate } from "../../../lib/dateutils";
 
-// for the timeline part
-import type { VisibleTask, TimelineScale } from '../types';
+const ROW_HEIGHT = 40;
 
 export const getTimelineRangeForTasks = (tasks: Task[]) => {
   if (!tasks || tasks.length === 0) {
@@ -24,7 +25,6 @@ export const getTimelineRangeForTasks = (tasks: Task[]) => {
     if (!isNaN(e) && e > maxTime) maxTime = e;
   });
 
-  // Buffers: 7 days before, 14 days after
   const start = new Date(minTime - 7 * 24 * 60 * 60 * 1000);
   const end = new Date(maxTime + 14 * 24 * 60 * 60 * 1000);
 
@@ -33,10 +33,69 @@ export const getTimelineRangeForTasks = (tasks: Task[]) => {
 
 const initialRange = getTimelineRangeForTasks(mockTasks);
 
+// ── Pre-compute helper: builds byParent index once, reused on every expand/collapse ──
+function buildByParent(tasks: Task[]): Record<string, Task[]> {
+  const map: Record<string, Task[]> = {};
+  for (const t of tasks) {
+    const key = t.parentId ?? 'root';
+    (map[key] ??= []).push(t);
+  }
+  return map;
+}
+
+// ── Pre-compute helper: builds full PositionedTask[] from store state ──
+function computePositionedTasks(
+  tasks: Task[],
+  expandedIds: Record<string, boolean>,
+  scale: TimelineScale,
+  timelineStart: Date,
+): PositionedTask[] {
+  const byParent = buildByParent(tasks);
+
+  const visible: VisibleTask[] = [];
+  const walk = (parentId: string, depth: number) => {
+    (byParent[parentId] ?? []).forEach((t) => {
+      visible.push({ ...t, depth });
+      if (byParent[t.id] && expandedIds[t.id]) {
+        walk(t.id, depth + 1);
+      }
+    });
+  };
+  walk('root', 0);
+
+  return visible.map((task, index) => {
+    const taskStart = toDate(task.startDate);
+    const taskEnd = toDate(task.endDate);
+    const taskEndInclusive =
+      task.type === 'milestone'
+        ? taskEnd
+        : new Date(taskEnd.getTime() + 86_400_000);
+
+    const left = getOffset(taskStart, timelineStart, scale);
+    const width =
+      task.type === 'milestone'
+        ? 0
+        : getOffset(taskEndInclusive, taskStart, scale);
+
+    return {
+      ...task,
+      left,
+      width,
+      top: index * ROW_HEIGHT,
+      rowHeight: ROW_HEIGHT,
+    };
+  });
+}
+
 interface DashboardState {
   tasks: Task[];
   expandedIds: Record<string, boolean>;
   isLoading: boolean;
+
+  // Pre-computed indexes (derived from tasks + expandedIds, updated atomically)
+  byParent: Record<string, Task[]>;
+  positionedTasks: PositionedTask[];
+  visibleTaskCount: number;
 
   // timeline attributes
   timelineStart: Date;
@@ -72,58 +131,117 @@ interface DashboardActions {
 
 type DashboardStore = DashboardState & DashboardActions;
 
-export const useDashboardStore = create<DashboardStore>((set) => ({
-  tasks: mockTasks,
-  expandedIds: {},
-  isLoading: false,
+function createInitialState(): DashboardState {
+  const tasks = mockTasks;
+  const expandedIds: Record<string, boolean> = {};
+  const timelineStart = initialRange.start;
+  const scale: TimelineScale = 'week';
+  const positionedTasks = computePositionedTasks(tasks, expandedIds, scale, timelineStart);
 
-  // timeline
-  timelineStart: initialRange.start,
-  timelineEnd: initialRange.end,
-  scale: 'week',
-  scrollTop: 0,
+  return {
+    tasks,
+    expandedIds,
+    isLoading: false,
+    byParent: buildByParent(tasks),
+    positionedTasks,
+    visibleTaskCount: positionedTasks.length,
+    timelineStart,
+    timelineEnd: initialRange.end,
+    scale,
+    scrollTop: 0,
+    customization: DEFAULT_GANTT_CUSTOMIZATION,
+  };
+}
 
-  // customization
-  customization: DEFAULT_GANTT_CUSTOMIZATION,
+export const useDashboardStore = create<DashboardStore>((set, get) => ({
+  ...createInitialState(),
 
-  expandTask: (id) => set((state) => ({
-    expandedIds: { ...state.expandedIds, [id]: true }
-  })),
+  expandTask: (id) => {
+    const state = get();
+    const nextIds = { ...state.expandedIds, [id]: true };
+    const nextPositioned = computePositionedTasks(state.tasks, nextIds, state.scale, state.timelineStart);
+    set({
+      expandedIds: nextIds,
+      positionedTasks: nextPositioned,
+      visibleTaskCount: nextPositioned.length,
+    });
+  },
 
-  collapseTask: (id) => set((state) => {
+  collapseTask: (id) => {
+    const state = get();
     const nextIds = { ...state.expandedIds };
     delete nextIds[id];
-    return { expandedIds: nextIds };
-  }),
+    const nextPositioned = computePositionedTasks(state.tasks, nextIds, state.scale, state.timelineStart);
+    set({
+      expandedIds: nextIds,
+      positionedTasks: nextPositioned,
+      visibleTaskCount: nextPositioned.length,
+    });
+  },
 
-  toggleExpand: (id) => set((state) => {
+  toggleExpand: (id) => {
+    const state = get();
     const nextIds = { ...state.expandedIds };
     if (nextIds[id]) {
       delete nextIds[id];
     } else {
       nextIds[id] = true;
     }
-    return { expandedIds: nextIds };
-  }),
-
-  expandAll: (ids) => set(() => {
-    const nextIds: Record<string, boolean> = {};
-    ids.forEach((id) => {
-      nextIds[id] = true;
+    const nextPositioned = computePositionedTasks(state.tasks, nextIds, state.scale, state.timelineStart);
+    set({
+      expandedIds: nextIds,
+      positionedTasks: nextPositioned,
+      visibleTaskCount: nextPositioned.length,
     });
-    return { expandedIds: nextIds };
-  }),
+  },
 
-  collapseAll: () => set(() => ({ expandedIds: {} })),
+  expandAll: (ids) => {
+    const state = get();
+    const nextIds: Record<string, boolean> = {};
+    ids.forEach((id) => { nextIds[id] = true; });
+    const nextPositioned = computePositionedTasks(state.tasks, nextIds, state.scale, state.timelineStart);
+    set({
+      expandedIds: nextIds,
+      positionedTasks: nextPositioned,
+      visibleTaskCount: nextPositioned.length,
+    });
+  },
+
+  collapseAll: () => {
+    const state = get();
+    const nextPositioned = computePositionedTasks(state.tasks, {}, state.scale, state.timelineStart);
+    set({
+      expandedIds: {},
+      positionedTasks: nextPositioned,
+      visibleTaskCount: nextPositioned.length,
+    });
+  },
 
   setIsLoading: (isLoading) => set(() => ({ isLoading })),
-  
-  // timeline
-  setTimelineRange: (timelineStart, timelineEnd) => set(() => ({ timelineStart, timelineEnd })),
-  setScale: (scale) => set(() => ({ scale })),
+
+  setTimelineRange: (timelineStart, timelineEnd) => {
+    const state = get();
+    const nextPositioned = computePositionedTasks(state.tasks, state.expandedIds, state.scale, timelineStart);
+    set({
+      timelineStart,
+      timelineEnd,
+      positionedTasks: nextPositioned,
+      visibleTaskCount: nextPositioned.length,
+    });
+  },
+
+  setScale: (scale) => {
+    const state = get();
+    const nextPositioned = computePositionedTasks(state.tasks, state.expandedIds, scale, state.timelineStart);
+    set({
+      scale,
+      positionedTasks: nextPositioned,
+      visibleTaskCount: nextPositioned.length,
+    });
+  },
+
   setScrollTop: (scrollTop) => set(() => ({ scrollTop })),
 
-  // customization actions
   setCustomization: (partial) => set((state) => ({
     customization: { ...state.customization, ...partial }
   })),
@@ -153,39 +271,30 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
   })),
 }));
 
-// Selectors
+// ── Selectors ──
 export const selectDashboardTasks = (state: DashboardStore) => state.tasks;
 export const selectDashboardIsLoading = (state: DashboardStore) => state.isLoading;
 export const selectExpandedIds = (state: DashboardStore) => state.expandedIds;
 export const selectIsTaskExpanded = (id: string) => (state: DashboardStore) => !!state.expandedIds[id];
 
-// timeline - selectors
+export const selectByParent = (state: DashboardStore) => state.byParent;
+export const selectPositionedTasks = (state: DashboardStore) => state.positionedTasks;
+export const selectVisibleTaskCount = (state: DashboardStore) => state.visibleTaskCount;
+
+// timeline selectors
 export const selectTimelineStart = (state: DashboardStore) => state.timelineStart;
 export const selectTimelineEnd = (state: DashboardStore) => state.timelineEnd;
 export const selectScale = (state: DashboardStore) => state.scale;
 export const selectScrollTop = (state: DashboardStore) => state.scrollTop;
 
-// customization - selectors
+// customization selectors
 export const selectCustomization = (state: DashboardStore) => state.customization;
 export const selectVisibleColumns = (state: DashboardStore) => state.customization.visibleColumns;
 export const selectTaskBarRadius = (state: DashboardStore) => state.customization.taskBarRadius;
 export const selectTaskBarColor = (state: DashboardStore) => state.customization.taskBarColor;
 export const selectTaskBarProgressColor = (state: DashboardStore) => state.customization.taskBarProgressColor;
 
+// Legacy selector — now reads from pre-computed state (zero cost)
 export const selectVisibleTasks = (state: DashboardStore): VisibleTask[] => {
-  const byParent: Record<string, Task[]> = {};
-  state.tasks.forEach((t) => {
-    const key = t.parentId ?? 'root';
-    (byParent[key] ??= []).push(t);
-  });
-
-  const result: VisibleTask[] = [];
-  const walk = (parentId: string, depth: number) => {
-    (byParent[parentId] ?? []).forEach((t) => {
-      result.push({ ...t, depth });
-      if (byParent[t.id] && state.expandedIds[t.id]) walk(t.id, depth + 1);
-    });
-  };
-  walk('root', 0);
-  return result;
+  return state.positionedTasks;
 };
