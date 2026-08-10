@@ -1,4 +1,4 @@
-import { useMemo, useRef, useEffect, useState, useCallback } from "react";
+import { useMemo, useRef, useState, useCallback } from "react";
 import type { PositionedTask } from "../dashboard/types";
 
 const ROW_HEIGHT = 40;
@@ -8,7 +8,7 @@ interface VirtualizedRowsResult {
   /** The subset of tasks that should be rendered */
   visibleTasks: PositionedTask[];
   /** Total scrollable height */
-  totalHeight: number;
+  totalHeight: number; 
   /** Current scrollTop of the shared viewport */
   scrollTop: number;
   /** Attach this ref to the scroll container */
