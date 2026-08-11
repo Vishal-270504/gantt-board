@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { GanttTableHeader } from "./GanttTableHeader";
 import { VirtualizedGanttTableBody } from "./VirtualizedGanttTableBody";
-import { getInitialColumnWidths } from "../constants";
+import { GANTT_COLUMNS, getInitialColumnWidths } from "../constants";
 import type { ColumnWidths } from "../constants";
+import { useDashboardStore, selectVisibleColumns } from "../store/useDashboardStore";
 
 interface GanttTableProps {
   syncScrollTop?: number;
@@ -11,16 +12,23 @@ interface GanttTableProps {
 
 export function GanttTable({ syncScrollTop, onScroll }: GanttTableProps) {
   const [widths, setWidths] = useState<ColumnWidths>(getInitialColumnWidths);
+  const visibleColumns = useDashboardStore(selectVisibleColumns);
+
+  const totalWidth = GANTT_COLUMNS.reduce(
+    (sum, col) => (visibleColumns.includes(col.id) ? sum + widths[col.id] : sum),
+    0,
+  );
 
   const handleColumnResize = (columnId: string, width: number) => {
     setWidths((prev) => ({ ...prev, [columnId]: width }));
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-x-auto overflow-y-hidden">
       <GanttTableHeader widths={widths} onColumnResize={handleColumnResize} />
       <VirtualizedGanttTableBody
         widths={widths}
+        totalWidth={totalWidth}
         syncScrollTop={syncScrollTop}
         onScroll={onScroll}
       />

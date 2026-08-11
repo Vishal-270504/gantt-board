@@ -1,9 +1,11 @@
-import type { Preview } from '@storybook/react-vite';
+import { definePreview } from '@storybook/react-vite';
 import '../src/index.css';
 import { TooltipProvider } from '../src/components/ui/tooltip';
+import addonPerformancePanel from '@github-ui/storybook-addon-performance-panel'
 
-
-const preview: Preview = {
+export default definePreview({
+  addons: [addonPerformancePanel()],
+  tags: ['autodocs'], // 👈 ADD THIS
   parameters: {
     controls: {
       matchers: {
@@ -24,6 +26,4 @@ const preview: Preview = {
       </TooltipProvider>
     ),
   ],
-};
-
-export default preview;
+});

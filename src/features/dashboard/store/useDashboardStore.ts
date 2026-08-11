@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import type { Task, GanttCustomization, PositionedTask, VisibleTask, TimelineScale, GanttColor } from '../types';
+import type { Task, GanttCustomization, PositionedTask, VisibleTask, TimelineScale, DateFormat, TimeFormat } from '../types';
 import { mockTasks } from '../mockData';
 import { DEFAULT_GANTT_CUSTOMIZATION } from '../constants';
-import { getOffset } from "../../Timeline/ScaleConfig";
-import { toDate } from "../../../lib/dateutils";
+import { getOffset } from '@/features/Timeline/ScaleConfig';
+import { toDate } from '@/lib/dateutils';
 
 const ROW_HEIGHT = 40;
 
@@ -33,7 +33,6 @@ export const getTimelineRangeForTasks = (tasks: Task[]) => {
 
 const initialRange = getTimelineRangeForTasks(mockTasks);
 
-// ── Pre-compute helper: builds byParent index once, reused on every expand/collapse ──
 function buildByParent(tasks: Task[]): Record<string, Task[]> {
   const map: Record<string, Task[]> = {};
   for (const t of tasks) {
@@ -43,7 +42,6 @@ function buildByParent(tasks: Task[]): Record<string, Task[]> {
   return map;
 }
 
-// ── Pre-compute helper: builds full PositionedTask[] from store state ──
 function computePositionedTasks(
   tasks: Task[],
   expandedIds: Record<string, boolean>,
@@ -97,14 +95,10 @@ interface DashboardState {
   byParent: Record<string, Task[]>;
   positionedTasks: PositionedTask[];
   visibleTaskCount: number;
-
-  // timeline attributes
   timelineStart: Date;
   timelineEnd: Date;
   scale: TimelineScale;
   scrollTop: number;
-
-  // customization
   customization: GanttCustomization;
 }
 
@@ -122,12 +116,12 @@ interface DashboardActions {
   setTimelineRange: (start: Date, end: Date) => void;
   setScale: (scale: TimelineScale) => void;
   setScrollTop: (n: number) => void;
-
-  // customization actions
   setCustomization: (customization: Partial<GanttCustomization>) => void;
   setTaskBarRadius: (radius: GanttCustomization['taskBarRadius']) => void;
   setTaskBarColor: (color: GanttCustomization['taskBarColor']) => void;
   setTaskBarProgressColor: (color: GanttCustomization['taskBarProgressColor']) => void;
+  setDateFormat: (format: DateFormat) => void;
+  setTimeFormat: (format: TimeFormat) => void;
   toggleColumnVisibility: (columnId: string) => void;
   setVisibleColumns: (columns: string[]) => void;
 }
@@ -267,6 +261,14 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     customization: { ...state.customization, taskBarProgressColor }
   })),
 
+  setDateFormat: (dateFormat) => set((state) => ({
+    customization: { ...state.customization, dateFormat }
+  })),
+
+  setTimeFormat: (timeFormat) => set((state) => ({
+    customization: { ...state.customization, timeFormat }
+  })),
+
   toggleColumnVisibility: (columnId) => set((state) => {
     const current = state.customization.visibleColumns;
     const next = current.includes(columnId)
@@ -291,20 +293,21 @@ export const selectByParent = (state: DashboardStore) => state.byParent;
 export const selectPositionedTasks = (state: DashboardStore) => state.positionedTasks;
 export const selectVisibleTaskCount = (state: DashboardStore) => state.visibleTaskCount;
 
-// timeline selectors
 export const selectTimelineStart = (state: DashboardStore) => state.timelineStart;
 export const selectTimelineEnd = (state: DashboardStore) => state.timelineEnd;
 export const selectScale = (state: DashboardStore) => state.scale;
 export const selectScrollTop = (state: DashboardStore) => state.scrollTop;
 
-// customization selectors
 export const selectCustomization = (state: DashboardStore) => state.customization;
 export const selectVisibleColumns = (state: DashboardStore) => state.customization.visibleColumns;
 export const selectTaskBarRadius = (state: DashboardStore) => state.customization.taskBarRadius;
 export const selectTaskBarColor = (state: DashboardStore) => state.customization.taskBarColor;
 export const selectTaskBarProgressColor = (state: DashboardStore) => state.customization.taskBarProgressColor;
 
-// Legacy selector — now reads from pre-computed state (zero cost)
+// NEW: Date/Time format selectors
+export const selectDateFormat = (state: DashboardStore) => state.customization.dateFormat;
+export const selectTimeFormat = (state: DashboardStore) => state.customization.timeFormat;
+
 export const selectVisibleTasks = (state: DashboardStore): VisibleTask[] => {
   return state.positionedTasks;
 };
