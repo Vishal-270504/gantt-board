@@ -8,8 +8,8 @@ interface TimelineGridProps {
   scale: TimelineScale;
   rowHeight: number;
   rowCount: number;
-  scrollTop: number;
-  containerHeight: number;
+  startRow: number; // first visible row index (from virtualizer)
+  endRow: number;   // last visible row index (from virtualizer)
 }
 
 export function TimelineGrid({
@@ -18,20 +18,16 @@ export function TimelineGrid({
   scale,
   rowHeight,
   rowCount,
-  scrollTop,
-  containerHeight,
+  startRow,
+  endRow,
 }: TimelineGridProps) {
   const config = useMemo(
     () => getGridConfig(startDate, endDate, scale),
     [startDate, endDate, scale],
   );
 
-  // Only render visible rows
-  const startRow = Math.max(0, Math.floor(scrollTop / rowHeight));
-  const endRow = Math.min(
-    rowCount - 1,
-    Math.ceil((scrollTop + containerHeight) / rowHeight),
-  );
+  const clampedStart = Math.max(0, startRow);
+  const clampedEnd = Math.min(rowCount - 1, endRow);
 
   return (
     <div className="absolute inset-0 pointer-events-none">
@@ -45,15 +41,16 @@ export function TimelineGrid({
       ))}
 
       {/* Horizontal row grid lines - only visible rows */}
-      {Array.from({ length: endRow - startRow + 1 }, (_, i) => startRow + i).map(
-        (rowIndex) => (
-          <div
-            key={`h-${rowIndex}`}
-            className="absolute left-0 right-0 border-b"
-            style={{ top: rowIndex * rowHeight }}
-          />
-        ),
-      )}
+      {Array.from(
+        { length: Math.max(0, clampedEnd - clampedStart + 1) },
+        (_, i) => clampedStart + i,
+      ).map((rowIndex) => (
+        <div
+          key={`h-${rowIndex}`}
+          className="absolute left-0 right-0 border-b"
+          style={{ top: rowIndex * rowHeight }}
+        />
+      ))}
     </div>
   );
 }

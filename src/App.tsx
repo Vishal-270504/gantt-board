@@ -8,7 +8,7 @@ export default function App() {
         styleOptions={{
           rowHeight: 40,
           taskBar: {
-            barColor: "indigo",
+            barColor: "emerald",
             progressColor: "emerald",
             radius: 'full',
           },

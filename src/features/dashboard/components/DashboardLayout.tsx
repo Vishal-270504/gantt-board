@@ -4,6 +4,7 @@ import { Timeline } from "@/features/Timeline/Timeline";
 import { ScaleNavbar } from "./ScaleNavbar";
 import type { Task, TimelineScale, GanttColor, TaskbarRadiusType } from "../types";
 import { useDashboardStore } from "../store/useDashboardStore";
+import { useSyncedScroll } from "./useSyncedScroll";
 
 const MIN_LEFT_PANEL_WIDTH = 300;
 const MAX_LEFT_PANEL_WIDTH = 800;
@@ -34,6 +35,8 @@ export function DashboardLayout({
   const setCustomization = useDashboardStore((s) => s.setCustomization
   )
 
+const { leftRef, rightRef, onLeftScroll, onRightScroll } = useSyncedScroll();
+
   useEffect(() => {
     setTasks(tasks);
 
@@ -57,22 +60,6 @@ export function DashboardLayout({
   const [leftPanelWidth, setLeftPanelWidth] = useState(400);
   const [isResizing, setIsResizing] = useState(false);
   const dragState = useRef<{ startX: number; startWidth: number } | null>(null);
-
-  // Shared scroll state for bidirectional sync
-  const [sharedScrollTop, setSharedScrollTop] = useState(0);
-  const [lastSource, setLastSource] = useState<"table" | "timeline" | null>(
-    null,
-  );
-
-  const handleTableScroll = useCallback((scrollTop: number) => {
-    setLastSource("table");
-    setSharedScrollTop(scrollTop);
-  }, []);
-
-  const handleTimelineScroll = useCallback((scrollTop: number) => {
-    setLastSource("timeline");
-    setSharedScrollTop(scrollTop);
-  }, []);
 
   useEffect(() => {
     if (!isResizing) return;
@@ -128,10 +115,8 @@ export function DashboardLayout({
           style={{ width: leftPanelWidth }}
         >
           <GanttTable
-            syncScrollTop={
-              lastSource === "timeline" ? sharedScrollTop : undefined
-            }
-            onScroll={handleTableScroll}
+            containerRef={leftRef}  
+            onScroll={onLeftScroll}
           />
         </aside>
 
@@ -153,8 +138,8 @@ export function DashboardLayout({
           className="flex-1 h-full overflow-hidden relative bg-muted/20"
         >
           <Timeline
-            syncScrollTop={lastSource === "table" ? sharedScrollTop : undefined}
-            onScroll={handleTimelineScroll}
+            containerRef={rightRef}
+            onScroll={onRightScroll}
           />
         </main>
       </div>
