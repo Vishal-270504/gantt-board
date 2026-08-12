@@ -18,6 +18,7 @@ export function useGanttController(): PositionedTask[] {
   const scale = useDashboardStore(selectScale);
   const timelineStart = useDashboardStore(selectTimelineStart);
 
+  
   return useMemo(() => {
     const byParent: Record<string, typeof tasks> = {};
 

@@ -1,5 +1,5 @@
-import { useRef, useEffect, useState, useCallback } from "react";
-import { useVirtualizer, Virtualizer } from "@tanstack/react-virtual";
+import { useRef, useEffect } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   useDashboardStore,
   selectTimelineStart,
@@ -13,7 +13,7 @@ import { TimelineGrid } from "../../components/ui/TimelineGrid.tsx";
 import { TaskBar } from "../../components/ui/Taskbar.tsx";
 import { MilestoneMarker } from "../../components/ui/MilestoneMarker.tsx";
 import { DependencyArrows } from "../../components/ui/DependencyArrows.tsx";
-import { getOffset } from "./ScaleConfig";
+import { getOffset, SCALE_CONFIGS } from "./ScaleConfig";
 
 interface TimelineProps {
   containerRef: React.RefObject<HTMLDivElement | null>;
@@ -91,6 +91,7 @@ export function Timeline({ containerRef, onScroll }: TimelineProps) {
             rowHeight={rowHeight}
             rowCount={positionedTasks.length}
             startRow={startRow}
+            scrollContainerRef={containerRef}
             endRow={endRow}
           />
           <DependencyArrows

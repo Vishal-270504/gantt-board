@@ -2,7 +2,12 @@ import { GanttTable } from "./GanttTable";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Timeline } from "@/features/Timeline/Timeline";
 import { ScaleNavbar } from "./ScaleNavbar";
-import type { Task, TimelineScale, GanttColor, TaskbarRadiusType } from "../types";
+import type {
+  Task,
+  TimelineScale,
+  GanttColor,
+  TaskbarRadiusType,
+} from "../types";
 import { useDashboardStore } from "../store/useDashboardStore";
 import { useSyncedScroll } from "./useSyncedScroll";
 
@@ -32,10 +37,9 @@ export function DashboardLayout({
   const setTasks = useDashboardStore((s) => s.setTasks);
   const setScale = useDashboardStore((s) => s.setScale);
   const setRowHeight = useDashboardStore((s) => s.setRowHeight);
-  const setCustomization = useDashboardStore((s) => s.setCustomization
-  )
+  const setCustomization = useDashboardStore((s) => s.setCustomization);
 
-const { leftRef, rightRef, onLeftScroll, onRightScroll } = useSyncedScroll();
+  const { leftRef, rightRef, onLeftScroll, onRightScroll } = useSyncedScroll();
 
   useEffect(() => {
     setTasks(tasks);
@@ -114,10 +118,7 @@ const { leftRef, rightRef, onLeftScroll, onRightScroll } = useSyncedScroll();
           className="flex-shrink-0 h-full overflow-hidden border-r z-10 bg-card flex flex-col"
           style={{ width: leftPanelWidth }}
         >
-          <GanttTable
-            containerRef={leftRef}  
-            onScroll={onLeftScroll}
-          />
+          <GanttTable containerRef={leftRef} onScroll={onLeftScroll} />
         </aside>
 
         {/* Vertical resize handle */}
@@ -137,10 +138,7 @@ const { leftRef, rightRef, onLeftScroll, onRightScroll } = useSyncedScroll();
           ref={timelineContainerRef}
           className="flex-1 h-full overflow-hidden relative bg-muted/20"
         >
-          <Timeline
-            containerRef={rightRef}
-            onScroll={onRightScroll}
-          />
+          <Timeline containerRef={rightRef} onScroll={onRightScroll} />
         </main>
       </div>
     </div>

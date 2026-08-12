@@ -127,7 +127,10 @@ export interface GridLine {
 
 export interface GridConfig {
   lines: GridLine[];
+  unitWidth?: number;
 }
+
+
 
 // Returns vertical grid lines at every unit boundary of the requested scale.
 export function getGridConfig(
@@ -142,5 +145,5 @@ export function getGridConfig(
     lines.push({ offset: i * unitWidth });
   });
   lines.push({ offset: units.length * unitWidth });
-  return { lines };
+  return { lines, unitWidth };
 }
