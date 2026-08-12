@@ -7,6 +7,8 @@ import type {
   TimelineScale,
   GanttColor,
   TaskbarRadiusType,
+  ColumnConfig,
+  DisplayOptions,
 } from "../types";
 import { useDashboardStore } from "../store/useDashboardStore";
 import { useSyncedScroll } from "./useSyncedScroll";
@@ -16,11 +18,13 @@ const MAX_LEFT_PANEL_WIDTH = 800;
 
 interface GanttProps {
   tasks: Task[];
-  displayOptions?: {
-    scale?: TimelineScale;
-  };
+  displayOptions?: DisplayOptions;
+  columns?: ColumnConfig[];
   styleOptions?: {
     rowHeight?: number;
+    ganttList?: {
+      headerColor?: GanttColor;
+    };
     taskBar?: {
       barColor?: GanttColor;
       projectBarColor?: GanttColor;
@@ -30,12 +34,25 @@ interface GanttProps {
   };
 }
 
-export function Gantt({ tasks, displayOptions, styleOptions }: GanttProps) {
+export function Gantt({
+  tasks,
+  displayOptions,
+  columns,
+  styleOptions,
+}: GanttProps) {
   const setTasks = useDashboardStore((s) => s.setTasks);
   const setScale = useDashboardStore((s) => s.setScale);
   const setRowHeight = useDashboardStore((s) => s.setRowHeight);
   const setCustomization = useDashboardStore((s) => s.setCustomization);
   const expandAll = useDashboardStore((s) => s.expandAll);
+  const setVisibleColumns = useDashboardStore((s) => s.setVisibleColumns);
+  const setGanttListHeaderColor = useDashboardStore(
+    (s) => s.setGanttListHeaderColor,
+  );
+  const setShowDependencies = useDashboardStore((s) => s.setShowDependencies);
+  const setShowDayLabels = useDashboardStore((s) => s.setShowDayLabels);
+  const setTimeFormat = useDashboardStore((s) => s.setTimeFormat);
+  const setAvailableScales = useDashboardStore((s) => s.setAvailableScales);
 
   useEffect(() => {
     const expandableIds = tasks.map((t) => t.id);
@@ -55,6 +72,10 @@ export function Gantt({ tasks, displayOptions, styleOptions }: GanttProps) {
       setRowHeight(styleOptions.rowHeight);
     }
 
+    if (styleOptions?.ganttList?.headerColor) {
+      setGanttListHeaderColor(styleOptions.ganttList.headerColor);
+    }
+
     setCustomization({
       taskBarColor: styleOptions?.taskBar?.barColor,
       taskBarProgressColor: styleOptions?.taskBar?.progressColor,
@@ -62,6 +83,45 @@ export function Gantt({ tasks, displayOptions, styleOptions }: GanttProps) {
       projectBarColor: styleOptions?.taskBar?.projectBarColor,
     });
   }, [styleOptions, displayOptions, tasks]);
+
+  if (columns && columns.length > 0) {
+    const visibleCols = columns
+      .filter((col) => col.visible !== false)
+      .map((col) => col.key);
+    setVisibleColumns(visibleCols);
+  } else {
+    // Reset to default visible columns if no columns prop is provided
+    const defaultVisibleColumns = [
+      "title",
+      "startDate",
+      "endDate",
+      "duration",
+      "progress",
+      "predecessors",
+    ];
+    setVisibleColumns(defaultVisibleColumns);
+  }
+
+  // Handle displayOptions
+  if (displayOptions?.showDependencies !== undefined) {
+    setShowDependencies(displayOptions.showDependencies);
+  }
+
+  if (displayOptions?.showDayLabels !== undefined) {
+    setShowDayLabels(displayOptions.showDayLabels);
+  } else {
+    // Auto-hide for quarter/year scales
+    const currentScale = displayOptions?.scale || "week";
+    setShowDayLabels(currentScale !== "quarter" && currentScale !== "year");
+  }
+
+  if (displayOptions?.timeFormat) {
+    setTimeFormat(displayOptions.timeFormat);
+  }
+
+  if (displayOptions?.availableScales) {
+    setAvailableScales(displayOptions.availableScales);
+  }
 
   const tableRef = useRef<HTMLElement>(null);
   const timelineContainerRef = useRef<HTMLDivElement>(null);
@@ -111,7 +171,14 @@ export function Gantt({ tasks, displayOptions, styleOptions }: GanttProps) {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full overflow-hidden bg-background text-foreground">
+    <div
+      className="flex flex-col h-screen w-full overflow-hidden bg-background text-foreground"
+      style={
+        {
+          "--row-height": `${styleOptions?.rowHeight || 40}px`,
+        } as React.CSSProperties
+      }
+    >
       {/* Top bar: full-width navbar with the timeline scale selector */}
       <ScaleNavbar />
 

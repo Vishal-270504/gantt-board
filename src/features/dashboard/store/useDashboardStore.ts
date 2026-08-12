@@ -7,6 +7,7 @@ import type {
   TimelineScale,
   DateFormat,
   TimeFormat,
+  GanttColor,
 } from "../types";
 import { mockTasks } from "../mockData";
 import { DEFAULT_GANTT_CUSTOMIZATION } from "../constants";
@@ -112,6 +113,10 @@ interface DashboardState {
   scale: TimelineScale;
   scrollTop: number;
   customization: GanttCustomization;
+  ganttListHeaderColor: GanttColor | undefined;
+  showDependencies: boolean;
+  showDayLabels: boolean;
+  availableScales: TimelineScale[];
 }
 
 interface DashboardActions {
@@ -139,6 +144,10 @@ interface DashboardActions {
   setTimeFormat: (format: TimeFormat) => void;
   toggleColumnVisibility: (columnId: string) => void;
   setVisibleColumns: (columns: string[]) => void;
+  setGanttListHeaderColor: (color: GanttColor | undefined) => void;
+  setShowDependencies: (show: boolean) => void;
+  setShowDayLabels: (show: boolean) => void;
+  setAvailableScales: (scales: TimelineScale[]) => void;
 }
 
 type DashboardStore = DashboardState & DashboardActions;
@@ -168,6 +177,10 @@ function createInitialState(): DashboardState {
     scrollTop: 0,
     customization: DEFAULT_GANTT_CUSTOMIZATION,
     rowHeight: ROW_HEIGHT,
+    ganttListHeaderColor: undefined,
+    showDependencies: true,
+    showDayLabels: true,
+    availableScales: ["hour", "day", "week", "month", "quarter", "year"],
   };
 }
 
@@ -352,6 +365,12 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     set((state) => ({
       customization: { ...state.customization, visibleColumns },
     })),
+
+  setGanttListHeaderColor: (color) => set({ ganttListHeaderColor: color }),
+
+  setShowDependencies: (showDependencies) => set({ showDependencies }),
+  setShowDayLabels: (showDayLabels) => set({ showDayLabels }),
+  setAvailableScales: (availableScales) => set({ availableScales }),
 }));
 
 // ── Selectors ──
@@ -385,6 +404,15 @@ export const selectTaskBarColor = (state: DashboardStore) =>
   state.customization.taskBarColor;
 export const selectTaskBarProgressColor = (state: DashboardStore) =>
   state.customization.taskBarProgressColor;
+export const selectGanttListHeaderColor = (state: DashboardStore) =>
+  state.ganttListHeaderColor;
+
+export const selectShowDependencies = (state: DashboardStore) =>
+  state.showDependencies;
+export const selectShowDayLabels = (state: DashboardStore) =>
+  state.showDayLabels;
+export const selectAvailableScales = (state: DashboardStore) =>
+  state.availableScales;
 
 // NEW: Date/Time format selectors
 export const selectDateFormat = (state: DashboardStore) =>

@@ -5,7 +5,7 @@ import {
   selectTimelineStart,
   selectTimelineEnd,
   selectScale,
-  selectRowHeight,
+  selectPositionedTasks,
 } from "../dashboard/store/useDashboardStore";
 import { ROW_HEIGHT } from "./useGanttController";
 import { TimelineHeader } from "../../components/Timeline/TimelineHeader.tsx";
@@ -24,8 +24,7 @@ export function Timeline({ containerRef }: TimelineProps) {
   const timelineEnd = useDashboardStore(selectTimelineEnd);
   const scale = useDashboardStore(selectScale);
   const tasks = useDashboardStore((s) => s.tasks);
-  const positionedTasks = useDashboardStore((s) => s.positionedTasks);
-  const rowHeight = useDashboardStore(selectRowHeight);
+  const positionedTasks = useDashboardStore(selectPositionedTasks);
 
   const didScrollRef = useRef<string | null>(null);
 
@@ -41,10 +40,6 @@ export function Timeline({ containerRef }: TimelineProps) {
 
   const virtualItems = virtualizer.getVirtualItems();
   const totalHeight = virtualizer.getTotalSize();
-  const startRow = virtualItems.length ? virtualItems[0].index : 0;
-  const endRow = virtualItems.length
-    ? virtualItems[virtualItems.length - 1].index
-    : 0;
 
   // Horizontal scroll-to-earliest-task on scale change
   useEffect(() => {
@@ -80,7 +75,10 @@ export function Timeline({ containerRef }: TimelineProps) {
   });
 
   return (
-    <div ref={containerRef} className="h-full overflow-auto relative">
+    <div
+      ref={containerRef}
+      className="h-full overflow-auto relative"
+    >
       <div className="relative w-max min-w-full">
         <TimelineHeader
           startDate={timelineStart}
@@ -94,6 +92,7 @@ export function Timeline({ containerRef }: TimelineProps) {
             scale={scale}
             scrollContainerRef={containerRef}
           />
+
           {/* Horizontal row separator lines — driven by row virtualizer directly */}
           {virtualItems.map((vi) => (
             <div
@@ -112,6 +111,7 @@ export function Timeline({ containerRef }: TimelineProps) {
               height: positionedTasks.length * ROW_HEIGHT,
             }}
           />
+
           <DependencyArrows tasks={renderedRows} rowHeight={ROW_HEIGHT} />
           {renderedRows.map((t) => {
             if (!t) return null;
