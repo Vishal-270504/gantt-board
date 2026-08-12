@@ -72,6 +72,7 @@ export interface ColumnConfig {
 // ── Gantt Customization ──
 export interface GanttCustomization {
   taskBarRadius: TaskbarRadiusType;
+  projectBarColor: GanttColor;
   taskBarColor: GanttColor;
   taskBarProgressColor: GanttColor;
   visibleColumns: string[];

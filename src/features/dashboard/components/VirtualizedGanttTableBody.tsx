@@ -12,7 +12,7 @@ interface VirtualizedGanttTableBodyProps {
   widths: ColumnWidths;
   totalWidth: number;
   containerRef: React.RefObject<HTMLDivElement | null>;
-  onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
+  // onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   columns?: ColumnConfig[];
 }
 
@@ -20,7 +20,7 @@ export function VirtualizedGanttTableBody({
   widths,
   totalWidth,
   containerRef,
-  onScroll,
+  // onScroll,
   columns,
 }: VirtualizedGanttTableBodyProps) {
   const tasks = useDashboardStore((state) => state.tasks);
@@ -56,7 +56,6 @@ export function VirtualizedGanttTableBody({
     <div
       ref={containerRef}
       className="flex-1 min-w-full bg-background overflow-y-auto overflow-x-hidden relative"
-      onScroll={onScroll}
       style={{ scrollBehavior: "auto", width: totalWidth, height: containerHeight }}
     >
       <div style={{ height: totalSize, position: "relative" }}>

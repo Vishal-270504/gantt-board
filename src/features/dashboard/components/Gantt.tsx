@@ -1,5 +1,5 @@
 import { GanttTable } from "./GanttTable";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Timeline } from "@/features/Timeline/Timeline";
 import { ScaleNavbar } from "./ScaleNavbar";
 import type {
@@ -27,25 +27,39 @@ interface GanttProps {
     };
     taskBar?: {
       barColor?: GanttColor;
+      projectBarColor?: GanttColor;
       progressColor?: GanttColor;
       radius?: TaskbarRadiusType;
     };
   };
 }
 
-export function Gantt({ tasks, displayOptions, columns, styleOptions }: GanttProps) {
+export function Gantt({
+  tasks,
+  displayOptions,
+  columns,
+  styleOptions,
+}: GanttProps) {
   const setTasks = useDashboardStore((s) => s.setTasks);
   const setScale = useDashboardStore((s) => s.setScale);
   const setRowHeight = useDashboardStore((s) => s.setRowHeight);
   const setCustomization = useDashboardStore((s) => s.setCustomization);
+  const expandAll = useDashboardStore((s) => s.expandAll);
   const setVisibleColumns = useDashboardStore((s) => s.setVisibleColumns);
-  const setGanttListHeaderColor = useDashboardStore((s) => s.setGanttListHeaderColor);
+  const setGanttListHeaderColor = useDashboardStore(
+    (s) => s.setGanttListHeaderColor,
+  );
   const setShowDependencies = useDashboardStore((s) => s.setShowDependencies);
   const setShowDayLabels = useDashboardStore((s) => s.setShowDayLabels);
   const setTimeFormat = useDashboardStore((s) => s.setTimeFormat);
   const setAvailableScales = useDashboardStore((s) => s.setAvailableScales);
 
-  const { leftRef, rightRef, onLeftScroll, onRightScroll } = useSyncedScroll();
+  useEffect(() => {
+    const expandableIds = tasks.map((t) => t.id);
+    expandAll(expandableIds);
+  }, []);
+
+  const { leftRef, rightRef } = useSyncedScroll();
 
   useEffect(() => {
     setTasks(tasks);
@@ -66,38 +80,48 @@ export function Gantt({ tasks, displayOptions, columns, styleOptions }: GanttPro
       taskBarColor: styleOptions?.taskBar?.barColor,
       taskBarProgressColor: styleOptions?.taskBar?.progressColor,
       taskBarRadius: styleOptions?.taskBar?.radius,
+      projectBarColor: styleOptions?.taskBar?.projectBarColor,
     });
+  }, [styleOptions, displayOptions, tasks]);
 
-    if (columns && columns.length > 0) {
-      const visibleCols = columns.filter(col => col.visible !== false).map(col => col.key);
-      setVisibleColumns(visibleCols);
-    } else {
-      // Reset to default visible columns if no columns prop is provided
-      const defaultVisibleColumns = ['title', 'startDate', 'endDate', 'duration', 'progress', 'predecessors'];
-      setVisibleColumns(defaultVisibleColumns);
-    }
+  if (columns && columns.length > 0) {
+    const visibleCols = columns
+      .filter((col) => col.visible !== false)
+      .map((col) => col.key);
+    setVisibleColumns(visibleCols);
+  } else {
+    // Reset to default visible columns if no columns prop is provided
+    const defaultVisibleColumns = [
+      "title",
+      "startDate",
+      "endDate",
+      "duration",
+      "progress",
+      "predecessors",
+    ];
+    setVisibleColumns(defaultVisibleColumns);
+  }
 
-    // Handle displayOptions
-    if (displayOptions?.showDependencies !== undefined) {
-      setShowDependencies(displayOptions.showDependencies);
-    }
+  // Handle displayOptions
+  if (displayOptions?.showDependencies !== undefined) {
+    setShowDependencies(displayOptions.showDependencies);
+  }
 
-    if (displayOptions?.showDayLabels !== undefined) {
-      setShowDayLabels(displayOptions.showDayLabels);
-    } else {
-      // Auto-hide for quarter/year scales
-      const currentScale = displayOptions?.scale || 'week';
-      setShowDayLabels(currentScale !== 'quarter' && currentScale !== 'year');
-    }
+  if (displayOptions?.showDayLabels !== undefined) {
+    setShowDayLabels(displayOptions.showDayLabels);
+  } else {
+    // Auto-hide for quarter/year scales
+    const currentScale = displayOptions?.scale || "week";
+    setShowDayLabels(currentScale !== "quarter" && currentScale !== "year");
+  }
 
-    if (displayOptions?.timeFormat) {
-      setTimeFormat(displayOptions.timeFormat);
-    }
+  if (displayOptions?.timeFormat) {
+    setTimeFormat(displayOptions.timeFormat);
+  }
 
-    if (displayOptions?.availableScales) {
-      setAvailableScales(displayOptions.availableScales);
-    }
-  }, [tasks, displayOptions, styleOptions, columns]);
+  if (displayOptions?.availableScales) {
+    setAvailableScales(displayOptions.availableScales);
+  }
 
   const tableRef = useRef<HTMLElement>(null);
   const timelineContainerRef = useRef<HTMLDivElement>(null);
@@ -147,7 +171,14 @@ export function Gantt({ tasks, displayOptions, columns, styleOptions }: GanttPro
   };
 
   return (
-    <div className="flex flex-col h-screen w-full overflow-hidden bg-background text-foreground" style={{ '--row-height': `${styleOptions?.rowHeight || 40}px` } as React.CSSProperties}>
+    <div
+      className="flex flex-col h-screen w-full overflow-hidden bg-background text-foreground"
+      style={
+        {
+          "--row-height": `${styleOptions?.rowHeight || 40}px`,
+        } as React.CSSProperties
+      }
+    >
       {/* Top bar: full-width navbar with the timeline scale selector */}
       <ScaleNavbar />
 
@@ -158,7 +189,12 @@ export function Gantt({ tasks, displayOptions, columns, styleOptions }: GanttPro
           className="flex-shrink-0 h-full overflow-hidden border-r z-10 bg-card flex flex-col"
           style={{ width: leftPanelWidth }}
         >
-          <GanttTable containerRef={leftRef} onScroll={onLeftScroll} columns={columns} />
+          <GanttTable containerRef={leftRef} />
+          {/* <div className="overflow-y-auto" ref={leftRef}>
+            {Array.from({ length: 100 }).map((_, i) => (
+              <div key={i}>Row {i}</div>
+            ))}
+          </div> */}
         </aside>
 
         {/* Vertical resize handle */}
@@ -178,7 +214,7 @@ export function Gantt({ tasks, displayOptions, columns, styleOptions }: GanttPro
           ref={timelineContainerRef}
           className="flex-1 h-full overflow-hidden relative bg-muted/20"
         >
-          <Timeline containerRef={rightRef} onScroll={onRightScroll} />
+          <Timeline containerRef={rightRef} />
         </main>
       </div>
     </div>

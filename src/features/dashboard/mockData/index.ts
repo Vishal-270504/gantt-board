@@ -6,7 +6,7 @@ export const mockTasks: Task[] = [
   id: 'ev-1',
   title: 'Annual Tech Conference 2026',
   progress: 0,
-  startDate: '2026-10-01T09:00:00',
+  startDate: '2026-08-01T09:00:00',
   endDate: '2026-12-15T17:00:00',
   type: 'project',
   parentId: null

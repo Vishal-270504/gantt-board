@@ -5,7 +5,7 @@ import {
   type DepConnector,
   type DepRect,
   type DepPoint,
-} from "./dependencyRouter";
+} from "../ui/dependencyRouter";
 
 const ARROW_COLOR = "var(--arrow-color, #6366f1)";
 const PADDING = 16;
