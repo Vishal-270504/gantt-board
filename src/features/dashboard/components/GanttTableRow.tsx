@@ -1,4 +1,4 @@
-import type { Task } from "../types";
+import type { Task, ColumnConfig } from "../types";
 import type { ColumnWidths } from "../constants";
 import { useDashboardStore, selectVisibleColumns } from "../store/useDashboardStore";
 import { TaskNameCell } from "./TaskNameCell";
@@ -14,6 +14,7 @@ interface GanttTableRowProps {
   isExpanded: boolean;
   hasChildren: boolean;
   widths: ColumnWidths;
+  columns?: ColumnConfig[];
   /** Absolute positioning style injected by virtualizer */
   style?: React.CSSProperties;
 }
@@ -24,69 +25,116 @@ export function GanttTableRow({
   isExpanded,
   hasChildren,
   widths,
+  columns,
   style,
 }: GanttTableRowProps) {
   const visibleColumns = useDashboardStore(selectVisibleColumns);
 
-  const columnRenderers: Record<string, React.ReactNode> = {
-    title: (
-      <TaskNameCell
-        key="title"
-        task={task}
-        depth={depth}
-        isExpanded={isExpanded}
-        hasChildren={hasChildren}
-        width={widths.title}
-      />
-    ),
-    startDate: (
-      <StartDateCell
-        key="startDate"
-        dateString={task.startDate}
-        width={widths.startDate}
-      />
-    ),
-    endDate: (
-      <EndDateCell
-        key="endDate"
-        dateString={task.endDate}
-        width={widths.endDate}
-      />
-    ),
-    duration: (
-      <DurationCell
-        key="duration"
-        startDate={task.startDate}
-        endDate={task.endDate}
-        width={widths.duration}
-      />
-    ),
-    progress: (
-      <ProgressCell
-        key="progress"
-        progress={task.progress}
-        width={widths.progress}
-      />
-    ),
-    predecessor: (
-      <PredecessorCell
-        key="predecessor"
-        predecessorIds={task.predecessors || []}
-        width={widths.predecessor}
-      />
-    ),
+  // Create a map of column configs for quick lookup
+  const columnConfigMap = new Map<string, ColumnConfig>();
+  columns?.forEach(col => {
+    columnConfigMap.set(col.key, col);
+  });
+
+  const getColumnWidth = (colId: string): number => {
+    // First check if there's a custom width in the columns config
+    const colConfig = columnConfigMap.get(colId as any);
+    if (colConfig?.width !== undefined) {
+      return colConfig.width;
+    }
+    // Fall back to the widths prop
+    return widths[colId] || 0;
+  };
+
+  const getColumnRenderer = (colId: string): React.ReactNode => {
+    const colConfig = columnConfigMap.get(colId as any);
+    
+    // If there's a custom render function, use it
+    if (colConfig?.render) {
+      return colConfig.render(task);
+    }
+    
+    // Fall back to default renderers
+    switch (colId) {
+      case 'title':
+        return (
+          <TaskNameCell
+            key="title"
+            task={task}
+            depth={depth}
+            isExpanded={isExpanded}
+            hasChildren={hasChildren}
+            width={getColumnWidth('title')}
+          />
+        );
+      case 'startDate':
+        return (
+          <StartDateCell
+            key="startDate"
+            dateString={task.startDate}
+            width={getColumnWidth('startDate')}
+            dateFormat={colConfig?.dateFormat}
+          />
+        );
+      case 'endDate':
+        return (
+          <EndDateCell
+            key="endDate"
+            dateString={task.endDate}
+            width={getColumnWidth('endDate')}
+            dateFormat={colConfig?.dateFormat}
+          />
+        );
+      case 'duration':
+        return (
+          <DurationCell
+            key="duration"
+            startDate={task.startDate}
+            endDate={task.endDate}
+            width={getColumnWidth('duration')}
+          />
+        );
+      case 'progress':
+        return (
+          <ProgressCell
+            key="progress"
+            progress={task.progress}
+            width={getColumnWidth('progress')}
+          />
+        );
+      case 'predecessors':
+        return (
+          <PredecessorCell
+            key="predecessors"
+            predecessorIds={task.predecessors || []}
+            width={getColumnWidth('predecessors')}
+          />
+        );
+      case 'assignee':
+        return (
+          <div
+            key="assignee"
+            className="p-2 border-r border-border truncate h-full flex items-center flex-shrink-0"
+            style={{ width: getColumnWidth('assignee') }}
+          >
+            {task.assignee || <span className="italic opacity-50">—</span>}
+          </div>
+        );
+      default:
+        return null;
+    }
   };
 
   const cells = visibleColumns
-    .map((colId) => columnRenderers[colId])
+    .map((colId) => getColumnRenderer(colId))
     .filter(Boolean);
 
   return (
-    <div
-      className="flex border-b border-border hover:bg-muted/50 transition-colors text-sm items-center w-max min-w-full"
-      style={style}
-    >
-      {cells}
-    </div>
-  );
+      <div
+        className="flex border-b border-border hover:bg-muted/50 transition-colors text-sm items-center w-max min-w-full"
+        style={{ ...style, height: 'var(--row-height)' }}
+      >
+        {cells}
+      </div>
+    );
 }

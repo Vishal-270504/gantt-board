@@ -49,7 +49,25 @@ export interface GanttRow extends VisibleTask {
 
 export type TimelineScale = 'year' | 'quarter' | 'month' | 'week' | 'day' | 'hour';
 
-export type TaskbarRadiusType = 'none' | 'sm' | 'md' | 'lg' | 'full'
+export type TaskbarRadiusType = 'none' | 'sm' | 'md' | 'lg' | 'full';
+export interface DisplayOptions {
+  scale?: TimelineScale;
+  availableScales?: TimelineScale[];
+  showDependencies?: boolean;
+  showDayLabels?: boolean;
+  timeFormat?: TimeFormat;
+}
+
+// ── Column Configuration ──
+export type ColumnKey = "title" | "startDate" | "endDate" | "duration" | "progress" | "predecessors" | "assignee";
+
+export interface ColumnConfig {
+  key: ColumnKey;
+  visible?: boolean;
+  width?: number;
+  dateFormat?: DateFormat;
+  render?: (task: Task) => React.ReactNode;
+}
 
 // ── Gantt Customization ──
 export interface GanttCustomization {
@@ -59,6 +77,9 @@ export interface GanttCustomization {
   visibleColumns: string[];
   dateFormat: DateFormat;
   timeFormat: TimeFormat;
+  ganttList?: {
+    headerColor?: GanttColor;
+  };
 }
 
 // ── Gantt Table Columns ──

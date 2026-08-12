@@ -15,6 +15,11 @@ const meta: Meta<typeof TaskBar> = {
       options: ['slate', 'blue', 'indigo', 'emerald', 'amber', 'rose', 'violet', 'cyan'],
       description: 'Background color of the task bar',
     },
+    type: {
+    control: 'select',
+    options: ['task', 'project', 'milestone'],
+    description: 'Visual style of the bar',
+  },
     progressColor: {
       control: 'select',
       options: ['slate', 'blue', 'indigo', 'emerald', 'amber', 'rose', 'violet', 'cyan'],

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { GanttTableRow } from './GanttTableRow';
 
 const meta: Meta<typeof GanttTableRow> = {
@@ -6,7 +6,7 @@ const meta: Meta<typeof GanttTableRow> = {
   component: GanttTableRow,
   tags: ['autodocs'],
   args: {
-    columnWidths: {
+    widths: {
       title: 250,
       startDate: 160,
       endDate: 160,

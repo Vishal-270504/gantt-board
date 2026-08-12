@@ -10,9 +10,9 @@ import {
 import { useGanttController, ROW_HEIGHT } from "./useGanttController";
 import { TimelineHeader } from "../../components/ui/TimelineHeader";
 import { TimelineGrid } from "../../components/ui/TimelineGrid.tsx";
-import { TaskBar } from "../../components/ui/Taskbar.tsx";
+ import { TaskBar } from "../../components/ui/Taskbar.tsx";
 import { MilestoneMarker } from "../../components/ui/MilestoneMarker.tsx";
-import { DependencyArrows } from "../../components/ui/DependencyArrows.tsx";
+ import { DependencyArrows } from "../../components/ui/DependencyArrows.tsx";
 import { getOffset } from "./ScaleConfig";
 
 interface TimelineProps {
@@ -26,7 +26,7 @@ export function Timeline({ containerRef, onScroll }: TimelineProps) {
   const scale = useDashboardStore(selectScale);
   const tasks = useDashboardStore((s) => s.tasks);
   const positionedTasks = useGanttController();
-  const rowHeight = useDashboardStore(selectRowHeight);
+  const rowHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--row-height') || '40', 10);
 
   const didScrollRef = useRef<string | null>(null);
 
@@ -71,6 +71,15 @@ export function Timeline({ containerRef, onScroll }: TimelineProps) {
     });
   }, [scale, tasks, timelineStart, containerRef]);
 
+  const renderedRows = virtualItems.map((vi) => {
+    const t = positionedTasks[vi.index];
+    return {
+      ...t,
+      top: vi.start,
+      rowHeight: ROW_HEIGHT,
+    };
+  });
+
   return (
     <div
       ref={containerRef}
@@ -94,12 +103,11 @@ export function Timeline({ containerRef, onScroll }: TimelineProps) {
             scrollContainerRef={containerRef}
             endRow={endRow}
           />
-          {/* <DependencyArrows
-            tasks={virtualItems.map((vi) => positionedTasks[vi.index])}
+          <DependencyArrows
+            tasks={renderedRows}
             rowHeight={ROW_HEIGHT}
-          /> */}
-          {/* {virtualItems.map((vi) => {
-            const t = positionedTasks[vi.index];
+          />
+          {renderedRows.map((t) => {
             if (!t) return null;
             return t.type === "milestone" ? (
               <MilestoneMarker
@@ -107,7 +115,6 @@ export function Timeline({ containerRef, onScroll }: TimelineProps) {
                 left={t.left}
                 top={t.top}
                 title={t.title}
-                // style={style}
               />
             ) : (
               <TaskBar
@@ -120,10 +127,9 @@ export function Timeline({ containerRef, onScroll }: TimelineProps) {
                 title={t.title}
                 assignee={t.assignee}
                 type={t.type}
-                // style={style}
               />
             );
-          })} */}
+          })}
         </div>
       </div>
     </div>
