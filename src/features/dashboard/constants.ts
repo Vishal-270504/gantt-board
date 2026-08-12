@@ -46,6 +46,7 @@ export const DEFAULT_GANTT_CUSTOMIZATION: GanttCustomization = {
   visibleColumns: ['title', 'startDate', 'endDate', 'duration', 'progress', 'predecessor'],
   dateFormat: 'DD MMM YYYY',
   timeFormat: '24-hour',
+  projectBarColor: "blue",
 };
 
 // ── Column Definitions ──

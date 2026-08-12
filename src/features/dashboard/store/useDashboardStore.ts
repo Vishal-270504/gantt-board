@@ -1,16 +1,28 @@
-import { create } from 'zustand';
-import type { Task, GanttCustomization, PositionedTask, VisibleTask, TimelineScale, DateFormat, TimeFormat } from '../types';
-import { mockTasks } from '../mockData';
-import { DEFAULT_GANTT_CUSTOMIZATION } from '../constants';
-import { getOffset } from '@/features/Timeline/ScaleConfig';
-import { toDate } from '@/lib/dateutils';
+import { create } from "zustand";
+import type {
+  Task,
+  GanttCustomization,
+  PositionedTask,
+  VisibleTask,
+  TimelineScale,
+  DateFormat,
+  TimeFormat,
+} from "../types";
+import { mockTasks } from "../mockData";
+import { DEFAULT_GANTT_CUSTOMIZATION } from "../constants";
+import { getOffset } from "@/features/Timeline/ScaleConfig";
+import { toDate } from "@/lib/dateutils";
 
 const ROW_HEIGHT = 40;
 
 export const getTimelineRangeForTasks = (tasks: Task[]) => {
   if (!tasks || tasks.length === 0) {
     const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+    const start = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - 7,
+    );
     const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30);
     return { start, end };
   }
@@ -36,7 +48,7 @@ const initialRange = getTimelineRangeForTasks(mockTasks);
 function buildByParent(tasks: Task[]): Record<string, Task[]> {
   const map: Record<string, Task[]> = {};
   for (const t of tasks) {
-    const key = t.parentId ?? 'root';
+    const key = t.parentId ?? "root";
     (map[key] ??= []).push(t);
   }
   return map;
@@ -59,19 +71,19 @@ function computePositionedTasks(
       }
     });
   };
-  walk('root', 0);
+  walk("root", 0);
 
   return visible.map((task, index) => {
     const taskStart = toDate(task.startDate);
     const taskEnd = toDate(task.endDate);
     const taskEndInclusive =
-      task.type === 'milestone'
+      task.type === "milestone"
         ? taskEnd
         : new Date(taskEnd.getTime() + 86_400_000);
 
     const left = getOffset(taskStart, timelineStart, scale);
     const width =
-      task.type === 'milestone'
+      task.type === "milestone"
         ? 0
         : getOffset(taskEndInclusive, taskStart, scale);
 
@@ -117,9 +129,12 @@ interface DashboardActions {
   setScale: (scale: TimelineScale) => void;
   setScrollTop: (n: number) => void;
   setCustomization: (customization: Partial<GanttCustomization>) => void;
-  setTaskBarRadius: (radius: GanttCustomization['taskBarRadius']) => void;
-  setTaskBarColor: (color: GanttCustomization['taskBarColor']) => void;
-  setTaskBarProgressColor: (color: GanttCustomization['taskBarProgressColor']) => void;
+  setTaskBarRadius: (radius: GanttCustomization["taskBarRadius"]) => void;
+  setTaskBarColor: (color: GanttCustomization["taskBarColor"]) => void;
+  setProjectBarColor: (color: GanttCustomization["projectBarColor"]) => void;
+  setTaskBarProgressColor: (
+    color: GanttCustomization["taskBarProgressColor"],
+  ) => void;
   setDateFormat: (format: DateFormat) => void;
   setTimeFormat: (format: TimeFormat) => void;
   toggleColumnVisibility: (columnId: string) => void;
@@ -132,8 +147,13 @@ function createInitialState(): DashboardState {
   const tasks = mockTasks;
   const expandedIds: Record<string, boolean> = {};
   const timelineStart = initialRange.start;
-  const scale: TimelineScale = 'week';
-  const positionedTasks = computePositionedTasks(tasks, expandedIds, scale, timelineStart);
+  const scale: TimelineScale = "week";
+  const positionedTasks = computePositionedTasks(
+    tasks,
+    expandedIds,
+    scale,
+    timelineStart,
+  );
 
   return {
     tasks,
@@ -157,7 +177,12 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
   expandTask: (id) => {
     const state = get();
     const nextIds = { ...state.expandedIds, [id]: true };
-    const nextPositioned = computePositionedTasks(state.tasks, nextIds, state.scale, state.timelineStart);
+    const nextPositioned = computePositionedTasks(
+      state.tasks,
+      nextIds,
+      state.scale,
+      state.timelineStart,
+    );
     set({
       expandedIds: nextIds,
       positionedTasks: nextPositioned,
@@ -169,7 +194,12 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     const state = get();
     const nextIds = { ...state.expandedIds };
     delete nextIds[id];
-    const nextPositioned = computePositionedTasks(state.tasks, nextIds, state.scale, state.timelineStart);
+    const nextPositioned = computePositionedTasks(
+      state.tasks,
+      nextIds,
+      state.scale,
+      state.timelineStart,
+    );
     set({
       expandedIds: nextIds,
       positionedTasks: nextPositioned,
@@ -185,7 +215,12 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     } else {
       nextIds[id] = true;
     }
-    const nextPositioned = computePositionedTasks(state.tasks, nextIds, state.scale, state.timelineStart);
+    const nextPositioned = computePositionedTasks(
+      state.tasks,
+      nextIds,
+      state.scale,
+      state.timelineStart,
+    );
     set({
       expandedIds: nextIds,
       positionedTasks: nextPositioned,
@@ -196,8 +231,15 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
   expandAll: (ids) => {
     const state = get();
     const nextIds: Record<string, boolean> = {};
-    ids.forEach((id) => { nextIds[id] = true; });
-    const nextPositioned = computePositionedTasks(state.tasks, nextIds, state.scale, state.timelineStart);
+    ids.forEach((id) => {
+      nextIds[id] = true;
+    });
+    const nextPositioned = computePositionedTasks(
+      state.tasks,
+      nextIds,
+      state.scale,
+      state.timelineStart,
+    );
     set({
       expandedIds: nextIds,
       positionedTasks: nextPositioned,
@@ -207,7 +249,12 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
 
   collapseAll: () => {
     const state = get();
-    const nextPositioned = computePositionedTasks(state.tasks, {}, state.scale, state.timelineStart);
+    const nextPositioned = computePositionedTasks(
+      state.tasks,
+      {},
+      state.scale,
+      state.timelineStart,
+    );
     set({
       expandedIds: {},
       positionedTasks: nextPositioned,
@@ -217,14 +264,19 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
 
   setIsLoading: (isLoading) => set(() => ({ isLoading })),
 
-  setTasks: (tasks) => set({tasks}),
-  
+  setTasks: (tasks) => set({ tasks }),
+
   // timeline
   setRowHeight: (rowHeight) => set({ rowHeight }),
 
   setTimelineRange: (timelineStart, timelineEnd) => {
     const state = get();
-    const nextPositioned = computePositionedTasks(state.tasks, state.expandedIds, state.scale, timelineStart);
+    const nextPositioned = computePositionedTasks(
+      state.tasks,
+      state.expandedIds,
+      state.scale,
+      timelineStart,
+    );
     set({
       timelineStart,
       timelineEnd,
@@ -235,7 +287,12 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
 
   setScale: (scale) => {
     const state = get();
-    const nextPositioned = computePositionedTasks(state.tasks, state.expandedIds, scale, state.timelineStart);
+    const nextPositioned = computePositionedTasks(
+      state.tasks,
+      state.expandedIds,
+      scale,
+      state.timelineStart,
+    );
     set({
       scale,
       positionedTasks: nextPositioned,
@@ -245,68 +302,95 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
 
   setScrollTop: (scrollTop) => set(() => ({ scrollTop })),
 
-  setCustomization: (partial) => set((state) => ({
-    customization: { ...state.customization, ...partial }
-  })),
+  setCustomization: (partial) =>
+    set((state) => ({
+      customization: { ...state.customization, ...partial },
+    })),
 
-  setTaskBarRadius: (taskBarRadius) => set((state) => ({
-    customization: { ...state.customization, taskBarRadius }
-  })),
+  setTaskBarRadius: (taskBarRadius) =>
+    set((state) => ({
+      customization: { ...state.customization, taskBarRadius },
+    })),
 
-  setTaskBarColor: (taskBarColor) => set((state) => ({
-    customization: { ...state.customization, taskBarColor }
-  })),
+  setProjectBarColor: (projectBarColor) =>
+    set((state) => ({
+      customization: { ...state.customization, projectBarColor },
+    })),
 
-  setTaskBarProgressColor: (taskBarProgressColor) => set((state) => ({
-    customization: { ...state.customization, taskBarProgressColor }
-  })),
+  setTaskBarColor: (taskBarColor) =>
+    set((state) => ({
+      customization: { ...state.customization, taskBarColor },
+    })),
 
-  setDateFormat: (dateFormat) => set((state) => ({
-    customization: { ...state.customization, dateFormat }
-  })),
+  setTaskBarProgressColor: (taskBarProgressColor) =>
+    set((state) => ({
+      customization: { ...state.customization, taskBarProgressColor },
+    })),
 
-  setTimeFormat: (timeFormat) => set((state) => ({
-    customization: { ...state.customization, timeFormat }
-  })),
+  setDateFormat: (dateFormat) =>
+    set((state) => ({
+      customization: { ...state.customization, dateFormat },
+    })),
 
-  toggleColumnVisibility: (columnId) => set((state) => {
-    const current = state.customization.visibleColumns;
-    const next = current.includes(columnId)
-      ? current.filter((id) => id !== columnId)
-      : [...current, columnId];
-    return { customization: { ...state.customization, visibleColumns: next } };
-  }),
+  setTimeFormat: (timeFormat) =>
+    set((state) => ({
+      customization: { ...state.customization, timeFormat },
+    })),
 
-  setVisibleColumns: (visibleColumns) => set((state) => ({
-    customization: { ...state.customization, visibleColumns }
-  })),
+  toggleColumnVisibility: (columnId) =>
+    set((state) => {
+      const current = state.customization.visibleColumns;
+      const next = current.includes(columnId)
+        ? current.filter((id) => id !== columnId)
+        : [...current, columnId];
+      return {
+        customization: { ...state.customization, visibleColumns: next },
+      };
+    }),
+
+  setVisibleColumns: (visibleColumns) =>
+    set((state) => ({
+      customization: { ...state.customization, visibleColumns },
+    })),
 }));
 
 // ── Selectors ──
 export const selectDashboardTasks = (state: DashboardStore) => state.tasks;
-export const selectDashboardIsLoading = (state: DashboardStore) => state.isLoading;
+export const selectDashboardIsLoading = (state: DashboardStore) =>
+  state.isLoading;
 export const selectExpandedIds = (state: DashboardStore) => state.expandedIds;
-export const selectIsTaskExpanded = (id: string) => (state: DashboardStore) => !!state.expandedIds[id];
+export const selectIsTaskExpanded = (id: string) => (state: DashboardStore) =>
+  !!state.expandedIds[id];
 export const selectRowHeight = (state: DashboardStore) => state.rowHeight;
 
 export const selectByParent = (state: DashboardStore) => state.byParent;
-export const selectPositionedTasks = (state: DashboardStore) => state.positionedTasks;
-export const selectVisibleTaskCount = (state: DashboardStore) => state.visibleTaskCount;
+export const selectPositionedTasks = (state: DashboardStore) =>
+  state.positionedTasks;
+export const selectVisibleTaskCount = (state: DashboardStore) =>
+  state.visibleTaskCount;
 
-export const selectTimelineStart = (state: DashboardStore) => state.timelineStart;
+export const selectTimelineStart = (state: DashboardStore) =>
+  state.timelineStart;
 export const selectTimelineEnd = (state: DashboardStore) => state.timelineEnd;
 export const selectScale = (state: DashboardStore) => state.scale;
 export const selectScrollTop = (state: DashboardStore) => state.scrollTop;
 
-export const selectCustomization = (state: DashboardStore) => state.customization;
-export const selectVisibleColumns = (state: DashboardStore) => state.customization.visibleColumns;
-export const selectTaskBarRadius = (state: DashboardStore) => state.customization.taskBarRadius;
-export const selectTaskBarColor = (state: DashboardStore) => state.customization.taskBarColor;
-export const selectTaskBarProgressColor = (state: DashboardStore) => state.customization.taskBarProgressColor;
+export const selectCustomization = (state: DashboardStore) =>
+  state.customization;
+export const selectVisibleColumns = (state: DashboardStore) =>
+  state.customization.visibleColumns;
+export const selectTaskBarRadius = (state: DashboardStore) =>
+  state.customization.taskBarRadius;
+export const selectTaskBarColor = (state: DashboardStore) =>
+  state.customization.taskBarColor;
+export const selectTaskBarProgressColor = (state: DashboardStore) =>
+  state.customization.taskBarProgressColor;
 
 // NEW: Date/Time format selectors
-export const selectDateFormat = (state: DashboardStore) => state.customization.dateFormat;
-export const selectTimeFormat = (state: DashboardStore) => state.customization.timeFormat;
+export const selectDateFormat = (state: DashboardStore) =>
+  state.customization.dateFormat;
+export const selectTimeFormat = (state: DashboardStore) =>
+  state.customization.timeFormat;
 
 export const selectVisibleTasks = (state: DashboardStore): VisibleTask[] => {
   return state.positionedTasks;

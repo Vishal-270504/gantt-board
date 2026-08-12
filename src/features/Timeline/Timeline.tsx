@@ -7,25 +7,24 @@ import {
   selectScale,
   selectRowHeight,
 } from "../dashboard/store/useDashboardStore";
-import { useGanttController, ROW_HEIGHT } from "./useGanttController";
-import { TimelineHeader } from "../../components/ui/TimelineHeader";
-import { TimelineGrid } from "../../components/ui/TimelineGrid.tsx";
-import { TaskBar } from "../../components/ui/Taskbar.tsx";
-import { MilestoneMarker } from "../../components/ui/MilestoneMarker.tsx";
-import { DependencyArrows } from "../../components/ui/DependencyArrows.tsx";
+import { ROW_HEIGHT } from "./useGanttController";
+import { TimelineHeader } from "../../components/Timeline/TimelineHeader.tsx";
+import { TimelineGrid } from "../../components/Timeline/TimelineGrid.tsx";
+import { TaskBar } from "../../components/Timeline/Taskbar.tsx";
+import { MilestoneMarker } from "../../components/Timeline/MilestoneMarker.tsx";
+import { DependencyArrows } from "../../components/Timeline/DependencyArrows.tsx";
 import { getOffset } from "./ScaleConfig";
 
 interface TimelineProps {
   containerRef: React.RefObject<HTMLDivElement | null>;
-  onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
 }
 
-export function Timeline({ containerRef, onScroll }: TimelineProps) {
+export function Timeline({ containerRef }: TimelineProps) {
   const timelineStart = useDashboardStore(selectTimelineStart);
   const timelineEnd = useDashboardStore(selectTimelineEnd);
   const scale = useDashboardStore(selectScale);
   const tasks = useDashboardStore((s) => s.tasks);
-  const positionedTasks = useGanttController();
+  const positionedTasks = useDashboardStore((s) => s.positionedTasks);
   const rowHeight = useDashboardStore(selectRowHeight);
 
   const didScrollRef = useRef<string | null>(null);
@@ -71,12 +70,17 @@ export function Timeline({ containerRef, onScroll }: TimelineProps) {
     });
   }, [scale, tasks, timelineStart, containerRef]);
 
+  const renderedRows = virtualItems.map((vi) => {
+    const t = positionedTasks[vi.index];
+    return {
+      ...t,
+      top: vi.start,
+      rowHeight: ROW_HEIGHT,
+    };
+  });
+
   return (
-    <div
-      ref={containerRef}
-      onScroll={onScroll}
-      className="h-full overflow-auto relative"
-    >
+    <div ref={containerRef} className="h-full overflow-auto relative">
       <div className="relative w-max min-w-full">
         <TimelineHeader
           startDate={timelineStart}
@@ -88,18 +92,28 @@ export function Timeline({ containerRef, onScroll }: TimelineProps) {
             startDate={timelineStart}
             endDate={timelineEnd}
             scale={scale}
-            rowHeight={rowHeight}
-            rowCount={positionedTasks.length}
-            startRow={startRow}
             scrollContainerRef={containerRef}
-            endRow={endRow}
           />
-          {/* <DependencyArrows
-            tasks={virtualItems.map((vi) => positionedTasks[vi.index])}
-            rowHeight={ROW_HEIGHT}
-          /> */}
-          {/* {virtualItems.map((vi) => {
-            const t = positionedTasks[vi.index];
+          {/* Horizontal row separator lines — driven by row virtualizer directly */}
+          {virtualItems.map((vi) => (
+            <div
+              key={vi.index}
+              className="absolute left-0 right-0 border-b pointer-events-none"
+              style={{ top: vi.start + ROW_HEIGHT - 1 }}
+            />
+          ))}
+
+          {/* Today marker */}
+          <div
+            className="absolute w-px bg-red-500 pointer-events-none"
+            style={{
+              left: getOffset(new Date(), timelineStart, scale),
+              top: 0,
+              height: positionedTasks.length * ROW_HEIGHT,
+            }}
+          />
+          <DependencyArrows tasks={renderedRows} rowHeight={ROW_HEIGHT} />
+          {renderedRows.map((t) => {
             if (!t) return null;
             return t.type === "milestone" ? (
               <MilestoneMarker
@@ -107,7 +121,6 @@ export function Timeline({ containerRef, onScroll }: TimelineProps) {
                 left={t.left}
                 top={t.top}
                 title={t.title}
-                // style={style}
               />
             ) : (
               <TaskBar
@@ -118,12 +131,12 @@ export function Timeline({ containerRef, onScroll }: TimelineProps) {
                 height={ROW_HEIGHT - 8}
                 progress={t.progress}
                 title={t.title}
+                hasParentId={t.parentId === null}
                 assignee={t.assignee}
                 type={t.type}
-                // style={style}
               />
             );
-          })} */}
+          })}
         </div>
       </div>
     </div>

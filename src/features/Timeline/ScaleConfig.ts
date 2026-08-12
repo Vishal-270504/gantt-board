@@ -1,4 +1,4 @@
-import type { TimelineScale } from '../dashboard/types/index';
+import type { TimelineScale } from "../dashboard/types/index";
 
 export interface HeaderGroup {
   label: string;
@@ -39,7 +39,10 @@ const eachHour = (start: Date, end: Date): Date[] => {
   return hours;
 };
 
-function groupByFormat(units: Date[], labelFn: (d: Date) => string): HeaderGroup[] {
+function groupByFormat(
+  units: Date[],
+  labelFn: (d: Date) => string,
+): HeaderGroup[] {
   const groups: HeaderGroup[] = [];
   units.forEach((u) => {
     const label = labelFn(u);
@@ -55,7 +58,9 @@ function groupByFormat(units: Date[], labelFn: (d: Date) => string): HeaderGroup
 
 function getWeekNumber(d: Date): number {
   const onejan = new Date(d.getFullYear(), 0, 1);
-  return Math.ceil(((d.getTime() - onejan.getTime()) / MS_PER_DAY + onejan.getDay() + 1) / 7);
+  return Math.ceil(
+    ((d.getTime() - onejan.getTime()) / MS_PER_DAY + onejan.getDay() + 1) / 7,
+  );
 }
 
 export const SCALE_CONFIGS: Record<TimelineScale, ScaleConfig> = {
@@ -65,9 +70,13 @@ export const SCALE_CONFIGS: Record<TimelineScale, ScaleConfig> = {
     getUnits: eachHour,
     getGroups: (start, end) =>
       groupByFormat(eachHour(start, end), (d) =>
-        d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+        d.toLocaleDateString(undefined, {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+        }),
       ),
-    formatUnit: (d) => d.toLocaleTimeString(undefined, { hour: 'numeric' }),
+    formatUnit: (d) => d.toLocaleTimeString(undefined, { hour: "numeric" }),
   },
 
   day: {
@@ -76,17 +85,18 @@ export const SCALE_CONFIGS: Record<TimelineScale, ScaleConfig> = {
     getUnits: eachDay,
     getGroups: (start, end) =>
       groupByFormat(eachDay(start, end), (d) =>
-        d.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+        d.toLocaleDateString(undefined, { month: "long", year: "numeric" }),
       ),
-    formatUnit: (d) => d.toLocaleDateString(undefined, { day: 'numeric' }),
+    formatUnit: (d) => d.toLocaleDateString(undefined, { day: "numeric" }),
   },
 
   week: {
     unitWidth: 36,
     msPerUnit: MS_PER_DAY,
     getUnits: eachDay,
-    getGroups: (start, end) => groupByFormat(eachDay(start, end), (d) => `Week ${getWeekNumber(d)}`),
-    formatUnit: (d) => d.toLocaleDateString(undefined, { weekday: 'short' }),
+    getGroups: (start, end) =>
+      groupByFormat(eachDay(start, end), (d) => `Week ${getWeekNumber(d)}`),
+    formatUnit: (d) => d.toLocaleDateString(undefined, { weekday: "short" }),
   },
 
   month: {
@@ -94,7 +104,9 @@ export const SCALE_CONFIGS: Record<TimelineScale, ScaleConfig> = {
     msPerUnit: MS_PER_DAY,
     getUnits: eachDay,
     getGroups: (start, end) =>
-      groupByFormat(eachDay(start, end), (d) => d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })),
+      groupByFormat(eachDay(start, end), (d) =>
+        d.toLocaleDateString(undefined, { month: "short", year: "numeric" }),
+      ),
     formatUnit: (d) => String(d.getDate()),
   },
 
@@ -103,20 +115,28 @@ export const SCALE_CONFIGS: Record<TimelineScale, ScaleConfig> = {
     msPerUnit: MS_PER_DAY,
     getUnits: eachDay,
     getGroups: (start, end) =>
-      groupByFormat(eachDay(start, end), (d) => `Q${Math.floor(d.getMonth() / 3) + 1} ${d.getFullYear()}`),
-    formatUnit: () => '',
+      groupByFormat(
+        eachDay(start, end),
+        (d) => `Q${Math.floor(d.getMonth() / 3) + 1} ${d.getFullYear()}`,
+      ),
+    formatUnit: () => "",
   },
 
   year: {
     unitWidth: 15,
     msPerUnit: MS_PER_DAY,
     getUnits: eachDay,
-    getGroups: (start, end) => groupByFormat(eachDay(start, end), (d) => String(d.getFullYear())),
-    formatUnit: () => '',
+    getGroups: (start, end) =>
+      groupByFormat(eachDay(start, end), (d) => String(d.getFullYear())),
+    formatUnit: () => "",
   },
 };
 
-export function getOffset(date: Date, base: Date, scale: TimelineScale): number {
+export function getOffset(
+  date: Date,
+  base: Date,
+  scale: TimelineScale,
+): number {
   const { unitWidth, msPerUnit } = SCALE_CONFIGS[scale];
   return ((date.getTime() - base.getTime()) / msPerUnit) * unitWidth;
 }
@@ -130,20 +150,3 @@ export interface GridConfig {
   unitWidth?: number;
 }
 
-
-
-// Returns vertical grid lines at every unit boundary of the requested scale.
-export function getGridConfig(
-  start: Date,
-  end: Date,
-  scale: TimelineScale,
-): GridConfig {
-  const { unitWidth } = SCALE_CONFIGS[scale];
-  const units = SCALE_CONFIGS[scale].getUnits(start, end);
-  const lines: GridLine[] = [];
-  units.forEach((_u, i) => {
-    lines.push({ offset: i * unitWidth });
-  });
-  lines.push({ offset: units.length * unitWidth });
-  return { lines, unitWidth };
-}

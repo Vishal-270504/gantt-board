@@ -9,6 +9,7 @@ export default function App() {
           rowHeight: 40,
           taskBar: {
             barColor: "emerald",
+            projectBarColor: "rose",
             progressColor: "emerald",
             radius: "full",
           },

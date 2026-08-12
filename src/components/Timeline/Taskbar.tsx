@@ -19,6 +19,8 @@ interface TaskBarProps {
   height: number;
   progress: number;
   title: string;
+  hasParentId?: boolean;
+  projectBarColor?: GanttColor;
   assignee?: string;
   type?: Task["type"];
   barColor?: GanttColor;
@@ -93,6 +95,8 @@ export function TaskBar({
   height,
   progress,
   title,
+  hasParentId = true,
+  projectBarColor = "blue",
   assignee,
   type = "task",
   barColor = "blue",
@@ -103,7 +107,10 @@ export function TaskBar({
   const isProject = type === "project";
   const customization = useDashboardStore((s) => s.customization);
 
-  const finalBarColor = customization.taskBarColor ?? barColor;
+  const finalBarColor = !hasParentId
+    ? (customization.taskBarColor ?? barColor)
+    : (customization.projectBarColor ?? projectBarColor);
+
   const color = BAR_COLOR_STYLES[finalBarColor];
 
   const finalProgressColor =

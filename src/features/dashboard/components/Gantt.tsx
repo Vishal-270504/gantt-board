@@ -1,5 +1,5 @@
 import { GanttTable } from "./GanttTable";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Timeline } from "@/features/Timeline/Timeline";
 import { ScaleNavbar } from "./ScaleNavbar";
 import type {
@@ -23,6 +23,7 @@ interface GanttProps {
     rowHeight?: number;
     taskBar?: {
       barColor?: GanttColor;
+      projectBarColor?: GanttColor;
       progressColor?: GanttColor;
       radius?: TaskbarRadiusType;
     };
@@ -34,8 +35,14 @@ export function Gantt({ tasks, displayOptions, styleOptions }: GanttProps) {
   const setScale = useDashboardStore((s) => s.setScale);
   const setRowHeight = useDashboardStore((s) => s.setRowHeight);
   const setCustomization = useDashboardStore((s) => s.setCustomization);
+  const expandAll = useDashboardStore((s) => s.expandAll);
 
-  const { leftRef, rightRef, onLeftScroll, onRightScroll } = useSyncedScroll();
+  useEffect(() => {
+    const expandableIds = tasks.map((t) => t.id);
+    expandAll(expandableIds);
+  }, []);
+
+  const { leftRef, rightRef } = useSyncedScroll();
 
   useEffect(() => {
     setTasks(tasks);
@@ -52,8 +59,9 @@ export function Gantt({ tasks, displayOptions, styleOptions }: GanttProps) {
       taskBarColor: styleOptions?.taskBar?.barColor,
       taskBarProgressColor: styleOptions?.taskBar?.progressColor,
       taskBarRadius: styleOptions?.taskBar?.radius,
+      projectBarColor: styleOptions?.taskBar?.projectBarColor,
     });
-  });
+  }, [styleOptions, displayOptions, tasks]);
 
   const tableRef = useRef<HTMLElement>(null);
   const timelineContainerRef = useRef<HTMLDivElement>(null);
@@ -114,7 +122,12 @@ export function Gantt({ tasks, displayOptions, styleOptions }: GanttProps) {
           className="flex-shrink-0 h-full overflow-hidden border-r z-10 bg-card flex flex-col"
           style={{ width: leftPanelWidth }}
         >
-          <GanttTable containerRef={leftRef} onScroll={onLeftScroll} />
+          <GanttTable containerRef={leftRef} />
+          {/* <div className="overflow-y-auto" ref={leftRef}>
+            {Array.from({ length: 100 }).map((_, i) => (
+              <div key={i}>Row {i}</div>
+            ))}
+          </div> */}
         </aside>
 
         {/* Vertical resize handle */}
@@ -134,7 +147,7 @@ export function Gantt({ tasks, displayOptions, styleOptions }: GanttProps) {
           ref={timelineContainerRef}
           className="flex-1 h-full overflow-hidden relative bg-muted/20"
         >
-          <Timeline containerRef={rightRef} onScroll={onRightScroll} />
+          <Timeline containerRef={rightRef} />
         </main>
       </div>
     </div>
