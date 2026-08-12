@@ -14,7 +14,7 @@ import { useSyncedScroll } from "./useSyncedScroll";
 const MIN_LEFT_PANEL_WIDTH = 300;
 const MAX_LEFT_PANEL_WIDTH = 800;
 
-interface DashboardLayoutProps {
+interface GanttProps {
   tasks: Task[];
   displayOptions?: {
     scale?: TimelineScale;
@@ -29,11 +29,7 @@ interface DashboardLayoutProps {
   };
 }
 
-export function DashboardLayout({
-  tasks,
-  displayOptions,
-  styleOptions,
-}: DashboardLayoutProps) {
+export function Gantt({ tasks, displayOptions, styleOptions }: GanttProps) {
   const setTasks = useDashboardStore((s) => s.setTasks);
   const setScale = useDashboardStore((s) => s.setScale);
   const setRowHeight = useDashboardStore((s) => s.setRowHeight);
