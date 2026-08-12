@@ -8,11 +8,11 @@ import {
 } from "../dashboard/store/useDashboardStore";
 import { getOffset } from "./ScaleConfig";
 import { toDate } from "../../lib/dateutils";
-import type { PositionedTask, VisibleTask } from "../dashboard/types";
+import type { GanttRow, VisibleTask } from "../dashboard/types";
 
 const ROW_HEIGHT = 40;
 
-export function useGanttController(): PositionedTask[] {
+export function useGanttController(): GanttRow[] {
   const tasks = useDashboardStore(selectDashboardTasks);
   const expandedIds = useDashboardStore(selectExpandedIds);
   const scale = useDashboardStore(selectScale);
@@ -39,7 +39,7 @@ export function useGanttController(): PositionedTask[] {
 
     walk("root", 0);
 
-    return visibleTasks.map((task, index) => {
+    return visibleTasks.map((task) => {
       const taskStart = toDate(task.startDate);
       const taskEnd = toDate(task.endDate);
       const taskEndInclusive =
@@ -57,8 +57,6 @@ export function useGanttController(): PositionedTask[] {
         ...task,
         left,
         width,
-        top: index * ROW_HEIGHT,
-        rowHeight: ROW_HEIGHT,
       };
     });
   }, [tasks, expandedIds, scale, timelineStart]);

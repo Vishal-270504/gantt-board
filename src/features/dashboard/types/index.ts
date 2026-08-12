@@ -37,6 +37,16 @@ export interface PositionedTask extends VisibleTask {
   rowHeight: number;
 }
 
+/**
+ * A flattened, draw-order (parent before children) visible task with the
+ * horizontal geometry needed to render its Gantt bar. Vertical position is
+ * intentionally omitted here - it is derived at render time by the virtualizer.
+ */
+export interface GanttRow extends VisibleTask {
+  left: number;
+  width: number;
+}
+
 export type TimelineScale = 'year' | 'quarter' | 'month' | 'week' | 'day' | 'hour';
 
 export type TaskbarRadiusType = 'none' | 'sm' | 'md' | 'lg' | 'full'

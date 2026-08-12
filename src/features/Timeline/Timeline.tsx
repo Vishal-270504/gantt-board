@@ -13,7 +13,7 @@ import { TimelineGrid } from "../../components/ui/TimelineGrid.tsx";
 import { TaskBar } from "../../components/ui/Taskbar.tsx";
 import { MilestoneMarker } from "../../components/ui/MilestoneMarker.tsx";
 import { DependencyArrows } from "../../components/ui/DependencyArrows.tsx";
-import { getOffset, SCALE_CONFIGS } from "./ScaleConfig";
+import { getOffset } from "./ScaleConfig";
 
 interface TimelineProps {
   containerRef: React.RefObject<HTMLDivElement | null>;
@@ -94,11 +94,11 @@ export function Timeline({ containerRef, onScroll }: TimelineProps) {
             scrollContainerRef={containerRef}
             endRow={endRow}
           />
-          <DependencyArrows
+          {/* <DependencyArrows
             tasks={virtualItems.map((vi) => positionedTasks[vi.index])}
             rowHeight={ROW_HEIGHT}
-          />
-          {virtualItems.map((vi) => {
+          /> */}
+          {/* {virtualItems.map((vi) => {
             const t = positionedTasks[vi.index];
             if (!t) return null;
             return t.type === "milestone" ? (
@@ -123,7 +123,7 @@ export function Timeline({ containerRef, onScroll }: TimelineProps) {
                 // style={style}
               />
             );
-          })}
+          })} */}
         </div>
       </div>
     </div>
