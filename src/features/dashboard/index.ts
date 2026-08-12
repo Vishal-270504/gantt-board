@@ -14,7 +14,7 @@ export * from './components/PredecessorCell';
 export * from './components/LoadingState';
 export * from './components/EmptyState';
 export * from './components/ExpandCollapseButton';
-export * from './components/DashboardLayout';
+export * from './components/Gantt';
 export * from './components/TimelinePlaceholder';
 export * from './store/useDashboardStore';
 export * from './utils/date';

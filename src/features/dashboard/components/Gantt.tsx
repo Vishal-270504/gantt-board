@@ -2,32 +2,64 @@ import { GanttTable } from "./GanttTable";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Timeline } from "@/features/Timeline/Timeline";
 import { ScaleNavbar } from "./ScaleNavbar";
+import type {
+  Task,
+  TimelineScale,
+  GanttColor,
+  TaskbarRadiusType,
+} from "../types";
+import { useDashboardStore } from "../store/useDashboardStore";
+import { useSyncedScroll } from "./useSyncedScroll";
 
 const MIN_LEFT_PANEL_WIDTH = 300;
 const MAX_LEFT_PANEL_WIDTH = 800;
 
-export function DashboardLayout() {
+interface GanttProps {
+  tasks: Task[];
+  displayOptions?: {
+    scale?: TimelineScale;
+  };
+  styleOptions?: {
+    rowHeight?: number;
+    taskBar?: {
+      barColor?: GanttColor;
+      progressColor?: GanttColor;
+      radius?: TaskbarRadiusType;
+    };
+  };
+}
+
+export function Gantt({ tasks, displayOptions, styleOptions }: GanttProps) {
+  const setTasks = useDashboardStore((s) => s.setTasks);
+  const setScale = useDashboardStore((s) => s.setScale);
+  const setRowHeight = useDashboardStore((s) => s.setRowHeight);
+  const setCustomization = useDashboardStore((s) => s.setCustomization);
+
+  const { leftRef, rightRef, onLeftScroll, onRightScroll } = useSyncedScroll();
+
+  useEffect(() => {
+    setTasks(tasks);
+
+    if (displayOptions?.scale) {
+      setScale(displayOptions.scale);
+    }
+
+    if (styleOptions?.rowHeight) {
+      setRowHeight(styleOptions.rowHeight);
+    }
+
+    setCustomization({
+      taskBarColor: styleOptions?.taskBar?.barColor,
+      taskBarProgressColor: styleOptions?.taskBar?.progressColor,
+      taskBarRadius: styleOptions?.taskBar?.radius,
+    });
+  });
+
   const tableRef = useRef<HTMLElement>(null);
   const timelineContainerRef = useRef<HTMLDivElement>(null);
   const [leftPanelWidth, setLeftPanelWidth] = useState(400);
   const [isResizing, setIsResizing] = useState(false);
   const dragState = useRef<{ startX: number; startWidth: number } | null>(null);
-
-  // Shared scroll state for bidirectional sync
-  const [sharedScrollTop, setSharedScrollTop] = useState(0);
-  const [lastSource, setLastSource] = useState<"table" | "timeline" | null>(
-    null,
-  );
-
-  const handleTableScroll = useCallback((scrollTop: number) => {
-    setLastSource("table");
-    setSharedScrollTop(scrollTop);
-  }, []);
-
-  const handleTimelineScroll = useCallback((scrollTop: number) => {
-    setLastSource("timeline");
-    setSharedScrollTop(scrollTop);
-  }, []);
 
   useEffect(() => {
     if (!isResizing) return;
@@ -82,12 +114,7 @@ export function DashboardLayout() {
           className="flex-shrink-0 h-full overflow-hidden border-r z-10 bg-card flex flex-col"
           style={{ width: leftPanelWidth }}
         >
-          <GanttTable
-            syncScrollTop={
-              lastSource === "timeline" ? sharedScrollTop : undefined
-            }
-            onScroll={handleTableScroll}
-          />
+          <GanttTable containerRef={leftRef} onScroll={onLeftScroll} />
         </aside>
 
         {/* Vertical resize handle */}
@@ -107,12 +134,7 @@ export function DashboardLayout() {
           ref={timelineContainerRef}
           className="flex-1 h-full overflow-hidden relative bg-muted/20"
         >
-          <Timeline
-            syncScrollTop={
-              lastSource === "table" ? sharedScrollTop : undefined
-            }
-            onScroll={handleTimelineScroll}
-          />
+          <Timeline containerRef={rightRef} onScroll={onRightScroll} />
         </main>
       </div>
     </div>

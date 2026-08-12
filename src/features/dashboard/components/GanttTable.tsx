@@ -6,11 +6,12 @@ import type { ColumnWidths } from "../constants";
 import { useDashboardStore, selectVisibleColumns } from "../store/useDashboardStore";
 
 interface GanttTableProps {
-  syncScrollTop?: number;
-  onScroll?: (scrollTop: number) => void;
+  // syncScrollTop?: number;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
 }
 
-export function GanttTable({ syncScrollTop, onScroll }: GanttTableProps) {
+export function GanttTable({ containerRef, onScroll }: GanttTableProps) {
   const [widths, setWidths] = useState<ColumnWidths>(getInitialColumnWidths);
   const visibleColumns = useDashboardStore(selectVisibleColumns);
 
@@ -29,8 +30,8 @@ export function GanttTable({ syncScrollTop, onScroll }: GanttTableProps) {
       <VirtualizedGanttTableBody
         widths={widths}
         totalWidth={totalWidth}
-        syncScrollTop={syncScrollTop}
         onScroll={onScroll}
+        containerRef={containerRef}
       />
     </div>
   );

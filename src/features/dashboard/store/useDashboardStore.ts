@@ -89,6 +89,9 @@ interface DashboardState {
   tasks: Task[];
   expandedIds: Record<string, boolean>;
   isLoading: boolean;
+  rowHeight: number;
+
+  // Pre-computed indexes (derived from tasks + expandedIds, updated atomically)
   byParent: Record<string, Task[]>;
   positionedTasks: PositionedTask[];
   visibleTaskCount: number;
@@ -106,6 +109,10 @@ interface DashboardActions {
   expandAll: (ids: string[]) => void;
   collapseAll: () => void;
   setIsLoading: (loading: boolean) => void;
+  setTasks: (tasks: Task[]) => void;
+  setRowHeight: (rowHeight: number) => void;
+
+  // timeline attributes
   setTimelineRange: (start: Date, end: Date) => void;
   setScale: (scale: TimelineScale) => void;
   setScrollTop: (n: number) => void;
@@ -140,6 +147,7 @@ function createInitialState(): DashboardState {
     scale,
     scrollTop: 0,
     customization: DEFAULT_GANTT_CUSTOMIZATION,
+    rowHeight: ROW_HEIGHT,
   };
 }
 
@@ -209,6 +217,11 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
 
   setIsLoading: (isLoading) => set(() => ({ isLoading })),
 
+  setTasks: (tasks) => set({tasks}),
+  
+  // timeline
+  setRowHeight: (rowHeight) => set({ rowHeight }),
+
   setTimelineRange: (timelineStart, timelineEnd) => {
     const state = get();
     const nextPositioned = computePositionedTasks(state.tasks, state.expandedIds, state.scale, timelineStart);
@@ -274,6 +287,7 @@ export const selectDashboardTasks = (state: DashboardStore) => state.tasks;
 export const selectDashboardIsLoading = (state: DashboardStore) => state.isLoading;
 export const selectExpandedIds = (state: DashboardStore) => state.expandedIds;
 export const selectIsTaskExpanded = (id: string) => (state: DashboardStore) => !!state.expandedIds[id];
+export const selectRowHeight = (state: DashboardStore) => state.rowHeight;
 
 export const selectByParent = (state: DashboardStore) => state.byParent;
 export const selectPositionedTasks = (state: DashboardStore) => state.positionedTasks;

@@ -49,9 +49,11 @@ export interface GanttRow extends VisibleTask {
 
 export type TimelineScale = 'year' | 'quarter' | 'month' | 'week' | 'day' | 'hour';
 
+export type TaskbarRadiusType = 'none' | 'sm' | 'md' | 'lg' | 'full'
+
 // ── Gantt Customization ──
 export interface GanttCustomization {
-  taskBarRadius: 'none' | 'sm' | 'md' | 'lg' | 'full';
+  taskBarRadius: TaskbarRadiusType;
   taskBarColor: GanttColor;
   taskBarProgressColor: GanttColor;
   visibleColumns: string[];
