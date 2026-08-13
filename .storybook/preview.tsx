@@ -1,29 +1,24 @@
-import { definePreview } from '@storybook/react-vite';
-import '../src/index.css';
+import type { Preview } from '@storybook/react-vite';
 import { TooltipProvider } from '../src/components/ui/tooltip';
-import addonPerformancePanel from '@github-ui/storybook-addon-performance-panel'
+import '../src/index.css'; // Make sure your Tailwind CSS is imported
 
-export default definePreview({
-  addons: [addonPerformancePanel()],
-  tags: ['autodocs'], // 👈 ADD THIS
+const preview: Preview = {
   parameters: {
+    layout: 'padded',
     controls: {
       matchers: {
         color: /(background|color)$/i,
-        date: /Date$/i,
+        date: /Date$/,
       },
-    },
-    a11y: {
-      test: 'todo',
     },
   },
   decorators: [
     (Story) => (
-      <TooltipProvider delayDuration={1150}> 
-        <div className="overflow-auto border border-border w-full min-h-[200px]"> 
-          <Story />
-        </div>
+      <TooltipProvider>
+        <Story />
       </TooltipProvider>
     ),
   ],
-});
+};
+
+export default preview;
