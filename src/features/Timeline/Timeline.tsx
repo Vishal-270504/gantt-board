@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   useDashboardStore,
@@ -6,8 +6,15 @@ import {
   selectTimelineEnd,
   selectScale,
   selectPositionedTasks,
+  selectRowHeight,
+  selectTimelineHeaderColor,
+  selectTimelineShowDayLabels,
+  selectTimelineTodayColor,
+  selectTimelineWeekendColor,
+  selectShowDependencyArrows,
+  selectTaskDoubleClick,
+  selectShowTitle,
 } from "../dashboard/store/useDashboardStore";
-import { ROW_HEIGHT } from "./useGanttController";
 import { TimelineHeader } from "../../components/Timeline/TimelineHeader.tsx";
 import { TimelineGrid } from "../../components/Timeline/TimelineGrid.tsx";
 import { TaskBar } from "../../components/Timeline/Taskbar.tsx";
@@ -20,28 +27,34 @@ interface TimelineProps {
   containerRef: React.RefObject<HTMLDivElement | null>;
 }
 
+const GANTT_COLOR_CLASSES: Record<GanttColor, string> = {
+  slate: "bg-slate-500",
+  blue: "bg-blue-500",
+  indigo: "bg-indigo-500",
+  emerald: "bg-emerald-500",
+  amber: "bg-amber-500",
+  rose: "bg-rose-500",
+  violet: "bg-violet-500",
+  cyan: "bg-cyan-500",
+};
+
 export function Timeline({ containerRef }: TimelineProps) {
   const timelineStart = useDashboardStore(selectTimelineStart);
   const timelineEnd = useDashboardStore(selectTimelineEnd);
   const scale = useDashboardStore(selectScale);
   const tasks = useDashboardStore((s) => s.tasks);
   const positionedTasks = useDashboardStore(selectPositionedTasks);
-  const customization = useDashboardStore((s) => s.customization);
+  const rowHeight = useDashboardStore(selectRowHeight);
+  const showDayLabels = useDashboardStore(selectTimelineShowDayLabels);
+  const timelineHeaderColor = useDashboardStore(selectTimelineHeaderColor);
+  const timelineWeekendColor = useDashboardStore(selectTimelineWeekendColor);
+  const timelineTodayColor = useDashboardStore(selectTimelineTodayColor);
+  const showDependencies = useDashboardStore(selectShowDependencyArrows);
+  const onTaskDoubleClick = useDashboardStore(selectTaskDoubleClick);
+  const showTitle = useDashboardStore(selectShowTitle);
   const didScrollRef = useRef<string | null>(null);
 
-  const ganttColorClasses: Record<GanttColor, string> = {
-    slate: "bg-slate-500",
-    blue: "bg-blue-500",
-    indigo: "bg-indigo-500",
-    emerald: "bg-emerald-500",
-    amber: "bg-amber-500",
-    rose: "bg-rose-500",
-    violet: "bg-violet-500",
-    cyan: "bg-cyan-500",
-  };
-
-  const todayColorClass =
-    ganttColorClasses[customization.timeline?.todayColor!];
+  const todayColorClass = GANTT_COLOR_CLASSES[timelineTodayColor];
 
   // containerHeight + ResizeObserver removed — useVirtualizer measures
   // the scroll container itself via getScrollElement, no manual tracking needed
@@ -49,7 +62,7 @@ export function Timeline({ containerRef }: TimelineProps) {
   const virtualizer = useVirtualizer({
     count: positionedTasks.length,
     getScrollElement: () => containerRef.current,
-    estimateSize: () => ROW_HEIGHT,
+    estimateSize: () => rowHeight,
     overscan: 10,
   });
 
@@ -85,9 +98,13 @@ export function Timeline({ containerRef }: TimelineProps) {
     return {
       ...t,
       top: vi.start,
-      rowHeight: ROW_HEIGHT,
+      rowHeight,
     };
   });
+
+  const handleTaskDoubleClick = useCallback(() => {
+    onTaskDoubleClick?.();
+  }, [onTaskDoubleClick]);
 
   return (
     <div ref={containerRef} className="h-full overflow-auto relative">
@@ -96,9 +113,9 @@ export function Timeline({ containerRef }: TimelineProps) {
           startDate={timelineStart}
           endDate={timelineEnd}
           scale={scale}
-          showDayLabels={customization.timeline?.showDayLabels}
-          headerColor={customization.timeline?.headerColor}
-          weekendColor={customization.timeline?.weekendColor}
+          showDayLabels={showDayLabels}
+          headerColor={timelineHeaderColor}
+          weekendColor={timelineWeekendColor}
         />
         <div style={{ height: totalHeight, position: "relative" }}>
           <TimelineGrid
@@ -113,7 +130,7 @@ export function Timeline({ containerRef }: TimelineProps) {
             <div
               key={vi.index}
               className="absolute left-0 right-0 border-b pointer-events-none"
-              style={{ top: vi.start + ROW_HEIGHT - 1 }}
+              style={{ top: vi.start + rowHeight - 1 }}
             />
           ))}
 
@@ -123,12 +140,12 @@ export function Timeline({ containerRef }: TimelineProps) {
             style={{
               left: getOffset(new Date(), timelineStart, scale),
               top: 0,
-              height: positionedTasks.length * ROW_HEIGHT,
+              height: positionedTasks.length * rowHeight,
             }}
           />
 
-          {customization?.dependencyArrows?.showDependencies && (
-            <DependencyArrows tasks={renderedRows} rowHeight={ROW_HEIGHT} />
+          {showDependencies && (
+            <DependencyArrows tasks={renderedRows} rowHeight={rowHeight} />
           )}
           {renderedRows.map((t) => {
             if (!t) return null;
@@ -141,19 +158,17 @@ export function Timeline({ containerRef }: TimelineProps) {
               />
             ) : (
               <TaskBar
-                onDoubleClick={() => {
-                  customization.onTaskDoubleClick?.();
-                }}
+                onDoubleClick={handleTaskDoubleClick}
                 key={t.id}
                 left={t.left}
                 width={t.width}
                 top={t.top}
-                height={ROW_HEIGHT - 8}
+                height={rowHeight - 8}
                 progress={t.progress}
                 title={t.title}
                 hasParentId={t.parentId === null}
                 assignee={t.assignee}
-                showTitle={customization.showTitle}
+                showTitle={showTitle}
                 type={t.type}
               />
             );

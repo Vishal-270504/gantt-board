@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useCallback, useState, useMemo } from "react";
 import { GanttTableHeader } from "./GanttTableHeader";
 import { VirtualizedGanttTableBody } from "./VirtualizedGanttTableBody";
 import { GANTT_COLUMNS, getInitialColumnWidths } from "../constants";
@@ -20,8 +20,7 @@ export function GanttTable({ containerRef, columns, onTaskDoubleClick }: GanttTa
   const effectiveColumns = useMemo<GanttColumn[]>(() => {
     if (columns && columns.length > 0) {
       // Use the columns from props, but filter to only those that are visible
-      const visibleColumnKeys = useDashboardStore.getState().customization.visibleColumns;
-      return GANTT_COLUMNS.filter(col => visibleColumnKeys.includes(col.id as string));
+      return GANTT_COLUMNS.filter(col => visibleColumns.includes(col.id as string));
     }
     // Fall back to the default behavior
     return GANTT_COLUMNS.filter(col => visibleColumns.includes(col.id));
@@ -49,9 +48,9 @@ export function GanttTable({ containerRef, columns, onTaskDoubleClick }: GanttTa
     0,
   );
 
-  const handleColumnResize = (columnId: string, width: number) => {
+  const handleColumnResize = useCallback((columnId: string, width: number) => {
     setWidths((prev) => ({ ...prev, [columnId]: width }));
-  };
+  }, []);
 
   return (
     <div className="flex flex-col h-full overflow-x-auto overflow-y-hidden">
