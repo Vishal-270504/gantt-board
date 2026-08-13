@@ -71,7 +71,7 @@ export const SCALE_CONFIGS: Record<TimelineScale, ScaleConfig> = {
     getGroups: (start, end) =>
       groupByFormat(eachHour(start, end), (d) =>
         d.toLocaleDateString(undefined, {
-          weekday: "short",
+          // weekday: "short",
           month: "short",
           day: "numeric",
         }),

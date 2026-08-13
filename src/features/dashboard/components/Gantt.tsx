@@ -1,5 +1,5 @@
 import { GanttTable } from "./GanttTable";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Timeline } from "@/features/Timeline/Timeline";
 import { ScaleNavbar } from "./ScaleNavbar";
 import type {
@@ -66,19 +66,24 @@ export function Gantt({
     (s) => s.setMilestoneBackgroundColor,
   );
   const setMilestoneShape = useDashboardStore((s) => s.setMilestoneShape);
+  const setAvailableScales = useDashboardStore((s) => s.setAvailableScales);
 
   useEffect(() => {
     const expandableIds = tasks.map((t) => t.id);
     expandAll(expandableIds);
-  }, []);
+  }, [expandAll, tasks]);
 
   const { leftRef, rightRef } = useSyncedScroll();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setTasks(tasks);
 
     if (displayOptions?.scale) {
       setScale(displayOptions.scale);
+    }
+
+    if (displayOptions?.availableScales) {
+      setAvailableScales(displayOptions.availableScales);
     }
 
     if (styleOptions?.rowHeight) {
@@ -107,9 +112,12 @@ export function Gantt({
 
     // Wire columns config into store
     if (columns && columns.length > 0) {
-      const visibleCols = columns
-        .filter((col) => col.visible !== false)
-        .map((col) => col.key);
+      const visibleCols = columns.reduce<string[]>((keys, col) => {
+        if (col.visible !== false) {
+          keys.push(col.key);
+        }
+        return keys;
+      }, []);
       setVisibleColumns(visibleCols);
     } else {
       const defaultVisibleColumns = [
@@ -137,10 +145,12 @@ export function Gantt({
     setRowHeight,
     setGanttListHeaderColor,
     setCustomization,
+    setAvailableScales,
     setMilestoneBackgroundColor,
     setMilestoneShape,
     setVisibleColumns,
     setTimeFormat,
+    onTaskDoubleClick,
   ]);
 
   const tableRef = useRef<HTMLElement>(null);
@@ -162,7 +172,7 @@ export function Gantt({
     };
   }, [isResizing]);
 
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (!dragState.current) return;
     const delta = e.clientX - dragState.current.startX;
     const nextWidth = Math.min(
@@ -170,16 +180,16 @@ export function Gantt({
       Math.max(MIN_LEFT_PANEL_WIDTH, dragState.current.startWidth + delta),
     );
     setLeftPanelWidth(nextWidth);
-  };
+  }, []);
 
-  const stopResize = (e: React.PointerEvent<HTMLDivElement>) => {
+  const stopResize = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (!dragState.current) return;
     dragState.current = null;
     setIsResizing(false);
     e.currentTarget.releasePointerCapture(e.pointerId);
-  };
+  }, []);
 
-  const startResize = (e: React.PointerEvent<HTMLDivElement>) => {
+  const startResize = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     dragState.current = {
@@ -188,7 +198,7 @@ export function Gantt({
     };
     e.currentTarget.setPointerCapture(e.pointerId);
     setIsResizing(true);
-  };
+  }, [leftPanelWidth]);
 
   return (
     <div
@@ -207,6 +217,16 @@ export function Gantt({
           className="flex-shrink-0 h-full overflow-hidden border-r z-10 bg-card flex flex-col"
           style={{ width: leftPanelWidth }}
         >
+          {/* <div ref={leftRef} className="h-full overflow-y-auto p-4 space-y-2">
+            {Array.from({ length: 100 }, (_, i) => (
+              <div
+                key={i}
+                className="h-16 rounded border bg-card flex items-center px-4"
+              >
+                Box {i + 1}
+              </div>
+            ))}
+          </div> */}
           <GanttTable
             containerRef={leftRef}
             columns={columns}

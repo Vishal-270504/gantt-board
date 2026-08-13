@@ -15,6 +15,7 @@ import { DEFAULT_GANTT_CUSTOMIZATION } from "../constants";
 import { getOffset } from "@/features/Timeline/ScaleConfig";
 import { toDate } from "@/lib/dateutils";
 
+console.log("State")
 const ROW_HEIGHT = 40;
 
 export const getTimelineRangeForTasks = (tasks: Task[]) => {
@@ -112,7 +113,6 @@ interface DashboardState {
   timelineStart: Date;
   timelineEnd: Date;
   scale: TimelineScale;
-  scrollTop: number;
   customization: GanttCustomization;
   ganttListHeaderColor: GanttColor | undefined;
   showDependencies: boolean;
@@ -138,7 +138,6 @@ interface DashboardActions {
   // timeline attributes
   setTimelineRange: (start: Date, end: Date) => void;
   setScale: (scale: TimelineScale) => void;
-  setScrollTop: (n: number) => void;
   setCustomization: (customization: Partial<GanttCustomization>) => void;
 
   setTaskBarProgressColor: (
@@ -161,7 +160,7 @@ function createInitialState(): DashboardState {
   const tasks = mockTasks;
   const expandedIds: Record<string, boolean> = {};
   const timelineStart = initialRange.start;
-  const scale: TimelineScale = "week";
+  const scale: TimelineScale = "day";
   const positionedTasks = computePositionedTasks(
     tasks,
     expandedIds,
@@ -179,7 +178,6 @@ function createInitialState(): DashboardState {
     timelineStart,
     timelineEnd: initialRange.end,
     scale,
-    scrollTop: 0,
     customization: DEFAULT_GANTT_CUSTOMIZATION,
     rowHeight: ROW_HEIGHT,
     ganttListHeaderColor: undefined,
@@ -287,7 +285,24 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
 
   setIsLoading: (isLoading) => set(() => ({ isLoading })),
 
-  setTasks: (tasks) => set({ tasks }),
+  setTasks: (tasks) => {
+    const state = get();
+    const range = getTimelineRangeForTasks(tasks);
+    const nextPositioned = computePositionedTasks(
+      tasks,
+      state.expandedIds,
+      state.scale,
+      range.start,
+    );
+    set({
+      tasks,
+      byParent: buildByParent(tasks),
+      positionedTasks: nextPositioned,
+      visibleTaskCount: nextPositioned.length,
+      timelineStart: range.start,
+      timelineEnd: range.end,
+    });
+  },
 
   // timeline
   setRowHeight: (rowHeight) => set({ rowHeight }),
@@ -322,7 +337,6 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     });
   },
 
-  setScrollTop: (scrollTop) => set(() => ({ scrollTop })),
 
   setCustomization: (partial) =>
     set((state) => ({
@@ -387,7 +401,6 @@ export const selectTimelineStart = (state: DashboardStore) =>
   state.timelineStart;
 export const selectTimelineEnd = (state: DashboardStore) => state.timelineEnd;
 export const selectScale = (state: DashboardStore) => state.scale;
-export const selectScrollTop = (state: DashboardStore) => state.scrollTop;
 
 export const selectCustomization = (state: DashboardStore) =>
   state.customization;
@@ -399,8 +412,24 @@ export const selectTaskBarColor = (state: DashboardStore) =>
   state.customization.taskBarColor;
 export const selectTaskBarProgressColor = (state: DashboardStore) =>
   state.customization.taskBarProgressColor;
+export const selectProjectBarColor = (state: DashboardStore) =>
+  state.customization.projectBarColor;
+export const selectShowTitle = (state: DashboardStore) =>
+  state.customization.showTitle;
+export const selectTaskDoubleClick = (state: DashboardStore) =>
+  state.customization.onTaskDoubleClick;
 export const selectGanttListHeaderColor = (state: DashboardStore) =>
   state.ganttListHeaderColor;
+export const selectTimelineShowDayLabels = (state: DashboardStore) =>
+  state.customization.timeline?.showDayLabels ?? true;
+export const selectTimelineHeaderColor = (state: DashboardStore) =>
+  state.customization.timeline?.headerColor ?? "slate";
+export const selectTimelineWeekendColor = (state: DashboardStore) =>
+  state.customization.timeline?.weekendColor ?? "slate";
+export const selectTimelineTodayColor = (state: DashboardStore) =>
+  state.customization.timeline?.todayColor ?? "slate";
+export const selectShowDependencyArrows = (state: DashboardStore) =>
+  state.customization.dependencyArrows?.showDependencies ?? true;
 
 export const selectShowDependencies = (state: DashboardStore) =>
   state.showDependencies;
