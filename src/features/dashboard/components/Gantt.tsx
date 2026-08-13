@@ -1,5 +1,11 @@
 import { GanttTable } from "./GanttTable";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { Timeline } from "@/features/Timeline/Timeline";
 import { ScaleNavbar } from "./ScaleNavbar";
 import type {
@@ -153,8 +159,6 @@ export function Gantt({
     onTaskDoubleClick,
   ]);
 
-  const tableRef = useRef<HTMLElement>(null);
-  const timelineContainerRef = useRef<HTMLDivElement>(null);
   const [leftPanelWidth, setLeftPanelWidth] = useState(400);
   const [isResizing, setIsResizing] = useState(false);
   const dragState = useRef<{ startX: number; startWidth: number } | null>(null);
@@ -172,15 +176,18 @@ export function Gantt({
     };
   }, [isResizing]);
 
-  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (!dragState.current) return;
-    const delta = e.clientX - dragState.current.startX;
-    const nextWidth = Math.min(
-      MAX_LEFT_PANEL_WIDTH,
-      Math.max(MIN_LEFT_PANEL_WIDTH, dragState.current.startWidth + delta),
-    );
-    setLeftPanelWidth(nextWidth);
-  }, []);
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!dragState.current) return;
+      const delta = e.clientX - dragState.current.startX;
+      const nextWidth = Math.min(
+        MAX_LEFT_PANEL_WIDTH,
+        Math.max(MIN_LEFT_PANEL_WIDTH, dragState.current.startWidth + delta),
+      );
+      setLeftPanelWidth(nextWidth);
+    },
+    [],
+  );
 
   const stopResize = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (!dragState.current) return;
@@ -189,16 +196,19 @@ export function Gantt({
     e.currentTarget.releasePointerCapture(e.pointerId);
   }, []);
 
-  const startResize = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dragState.current = {
-      startX: e.clientX,
-      startWidth: leftPanelWidth,
-    };
-    e.currentTarget.setPointerCapture(e.pointerId);
-    setIsResizing(true);
-  }, [leftPanelWidth]);
+  const startResize = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragState.current = {
+        startX: e.clientX,
+        startWidth: leftPanelWidth,
+      };
+      e.currentTarget.setPointerCapture(e.pointerId);
+      setIsResizing(true);
+    },
+    [leftPanelWidth],
+  );
 
   return (
     <div
@@ -213,7 +223,6 @@ export function Gantt({
 
       <div className="flex flex-1 min-h-0">
         <aside
-          ref={tableRef}
           className="flex-shrink-0 h-full overflow-hidden border-r z-10 bg-card flex flex-col"
           style={{ width: leftPanelWidth }}
         >
@@ -245,10 +254,7 @@ export function Gantt({
           aria-label="Resize left panel"
         />
 
-        <main
-          ref={timelineContainerRef}
-          className="flex-1 h-full overflow-hidden relative bg-muted/20"
-        >
+        <main className="flex-1 h-full overflow-hidden relative bg-muted/20">
           <Timeline containerRef={rightRef} />
         </main>
       </div>
