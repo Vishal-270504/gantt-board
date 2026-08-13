@@ -16,7 +16,11 @@ import type {
   DisplayOptions,
   MilestoneShape,
 } from "../types";
-import { useDashboardStore } from "../store/useDashboardStore";
+import {
+  selectShowDayLabels,
+  selectTimelineWeekendColor,
+  useDashboardStore,
+} from "../store/useDashboardStore";
 import { useSyncedScroll } from "./useSyncedScroll";
 
 const MIN_LEFT_PANEL_WIDTH = 300;
@@ -99,13 +103,18 @@ export function Gantt({
     if (styleOptions?.ganttList?.headerColor) {
       setGanttListHeaderColor(styleOptions.ganttList.headerColor);
     }
-
     setCustomization({
       taskBarColor: styleOptions?.taskBar?.barColor,
       taskBarProgressColor: styleOptions?.taskBar?.progressColor,
       taskBarRadius: styleOptions?.taskBar?.radius,
       projectBarColor: styleOptions?.taskBar?.projectBarColor,
       showTitle: styleOptions?.taskBar?.showTitle,
+      timeline: {
+        showDayLabels: displayOptions?.showDayLabels || true,
+        weekendColor: styleOptions?.timeline?.weekendColor || "slate",
+        todayColor: styleOptions?.timeline?.todayColor || "slate",
+        headerColor: styleOptions?.timeline?.headerColor || "slate",
+      },
     });
 
     // Wire milestone styles from styleOptions into the store
