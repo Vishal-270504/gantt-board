@@ -59,6 +59,7 @@ export const DEFAULT_GANTT_CUSTOMIZATION: GanttCustomization = {
   dateFormat: 'DD MMM YYYY',
   timeFormat: '24-hour',
   projectBarColor: "blue",
+  showTitle: true,
 };
 
 // ── Column Definitions ──

@@ -15,6 +15,7 @@ interface GanttTableRowProps {
   hasChildren: boolean;
   widths: ColumnWidths;
   columns?: ColumnConfig[];
+  onTaskDoubleClick?: (task: Task) => void;
   /** Absolute positioning style injected by virtualizer */
   style?: React.CSSProperties;
 }
@@ -26,6 +27,7 @@ export function GanttTableRow({
   hasChildren,
   widths,
   columns,
+  onTaskDoubleClick,
   style,
 }: GanttTableRowProps) {
   const visibleColumns = useDashboardStore(selectVisibleColumns);
@@ -48,12 +50,12 @@ export function GanttTableRow({
 
   const getColumnRenderer = (colId: string): React.ReactNode => {
     const colConfig = columnConfigMap.get(colId as any);
-    
+
     // If there's a custom render function, use it
     if (colConfig?.render) {
       return colConfig.render(task);
     }
-    
+
     // Fall back to default renderers
     switch (colId) {
       case 'title':
@@ -130,11 +132,12 @@ export function GanttTableRow({
     .filter(Boolean);
 
   return (
-      <div
-        className="flex border-b border-border hover:bg-muted/50 transition-colors text-sm items-center w-max min-w-full"
-        style={{ ...style, height: 'var(--row-height)' }}
-      >
-        {cells}
-      </div>
-    );
+    <div
+      className="flex border-b border-border hover:bg-muted/50 transition-colors text-sm items-center w-max min-w-full"
+      style={{ ...style, height: 'var(--row-height)' }}
+      onDoubleClick={() => onTaskDoubleClick?.(task)}
+    >
+      {cells}
+    </div>
+  );
 }

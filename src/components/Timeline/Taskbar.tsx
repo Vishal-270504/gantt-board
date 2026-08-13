@@ -1,8 +1,4 @@
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
+import {  Tooltip,  TooltipTrigger,  TooltipContent } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type {
   Task,
@@ -10,7 +6,7 @@ import type {
   GanttCustomization,
 } from "../../features/dashboard/types";
 import type { CSSProperties } from "react";
-import { useDashboardStore } from "@/features/dashboard";
+import { useDashboardStore, selectShowTitle } from "@/features/dashboard";
 
 interface TaskBarProps {
   left: number;
@@ -106,10 +102,11 @@ export function TaskBar({
 }: TaskBarProps) {
   const isProject = type === "project";
   const customization = useDashboardStore((s) => s.customization);
+  const showTitle = useDashboardStore(selectShowTitle);
 
-  const finalBarColor = !hasParentId
-    ? (customization.taskBarColor ?? barColor)
-    : (customization.projectBarColor ?? projectBarColor);
+  const finalBarColor = isProject
+    ? (customization.projectBarColor ?? projectBarColor)
+    : (customization.taskBarColor ?? barColor);
 
   const color = BAR_COLOR_STYLES[finalBarColor];
 
@@ -155,7 +152,7 @@ export function TaskBar({
                 style={progressStyle}
               />
             )}
-            {titleFits && (
+            {showTitle && titleFits && (
               <span
                 className={cn(
                   "absolute inset-0 flex items-center px-2 text-xs truncate",
@@ -168,7 +165,7 @@ export function TaskBar({
           </div>
 
           {/* Title shown beside the bar when it doesn't fit inside */}
-          {!titleFits && (
+          {showTitle && !titleFits && (
             <span
               className={cn(
                 "ml-2 text-xs whitespace-nowrap font-medium",

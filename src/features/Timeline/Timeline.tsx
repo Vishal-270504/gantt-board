@@ -6,6 +6,8 @@ import {
   selectTimelineEnd,
   selectScale,
   selectPositionedTasks,
+  selectTimelineTodayColor,
+  selectTimelineWeekendColor,
 } from "../dashboard/store/useDashboardStore";
 import { ROW_HEIGHT } from "./useGanttController";
 import { TimelineHeader } from "../../components/Timeline/TimelineHeader.tsx";
@@ -25,11 +27,11 @@ export function Timeline({ containerRef }: TimelineProps) {
   const scale = useDashboardStore(selectScale);
   const tasks = useDashboardStore((s) => s.tasks);
   const positionedTasks = useDashboardStore(selectPositionedTasks);
+  const todayColor = useDashboardStore(selectTimelineTodayColor);
+  const weekendColor = useDashboardStore(selectTimelineWeekendColor);
+  const headerColor = "slate";
 
   const didScrollRef = useRef<string | null>(null);
-
-  // containerHeight + ResizeObserver removed — useVirtualizer measures
-  // the scroll container itself via getScrollElement, no manual tracking needed
 
   const virtualizer = useVirtualizer({
     count: positionedTasks.length,
@@ -41,7 +43,6 @@ export function Timeline({ containerRef }: TimelineProps) {
   const virtualItems = virtualizer.getVirtualItems();
   const totalHeight = virtualizer.getTotalSize();
 
-  // Horizontal scroll-to-earliest-task on scale change
   useEffect(() => {
     const key = scale;
     if (didScrollRef.current === key) return;
@@ -74,6 +75,32 @@ export function Timeline({ containerRef }: TimelineProps) {
     };
   });
 
+  const colorClasses: Record<string, string> = {
+    slate: "bg-slate-100",
+    blue: "bg-blue-100",
+    indigo: "bg-indigo-100",
+    emerald: "bg-emerald-100",
+    amber: "bg-amber-100",
+    rose: "bg-rose-100",
+    violet: "bg-violet-100",
+    cyan: "bg-cyan-100",
+  };
+
+  const lineColorClasses: Record<string, string> = {
+    slate: "bg-slate-500",
+    blue: "bg-blue-500",
+    indigo: "bg-indigo-500",
+    emerald: "bg-emerald-500",
+    amber: "bg-amber-500",
+    rose: "bg-rose-500",
+    violet: "bg-violet-500",
+    cyan: "bg-cyan-500",
+  };
+
+  const todayColorClass = lineColorClasses[todayColor] || "bg-red-500";
+  const weekendColorClass = colorClasses[weekendColor] || "bg-slate-100";
+  const headerColorClass = colorClasses[headerColor] || "bg-slate-100";
+
   return (
     <div
       ref={containerRef}
@@ -93,7 +120,6 @@ export function Timeline({ containerRef }: TimelineProps) {
             scrollContainerRef={containerRef}
           />
 
-          {/* Horizontal row separator lines — driven by row virtualizer directly */}
           {virtualItems.map((vi) => (
             <div
               key={vi.index}
@@ -102,9 +128,8 @@ export function Timeline({ containerRef }: TimelineProps) {
             />
           ))}
 
-          {/* Today marker */}
           <div
-            className="absolute w-px bg-red-500 pointer-events-none"
+            className={`absolute w-px ${todayColorClass} pointer-events-none`}
             style={{
               left: getOffset(new Date(), timelineStart, scale),
               top: 0,

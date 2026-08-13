@@ -8,6 +8,7 @@ import type {
   DateFormat,
   TimeFormat,
   GanttColor,
+  MilestoneShape,
 } from "../types";
 import { mockTasks } from "../mockData";
 import { DEFAULT_GANTT_CUSTOMIZATION } from "../constants";
@@ -117,6 +118,12 @@ interface DashboardState {
   showDependencies: boolean;
   showDayLabels: boolean;
   availableScales: TimelineScale[];
+  showTitle: boolean;
+  timelineTodayColor: GanttColor;
+  timelineWeekendColor: GanttColor;
+  timelineHeaderColor: GanttColor;
+  milestoneBackgroundColor: GanttColor;
+  milestoneShape: MilestoneShape;
 }
 
 interface DashboardActions {
@@ -134,12 +141,9 @@ interface DashboardActions {
   setScale: (scale: TimelineScale) => void;
   setScrollTop: (n: number) => void;
   setCustomization: (customization: Partial<GanttCustomization>) => void;
-  setTaskBarRadius: (radius: GanttCustomization["taskBarRadius"]) => void;
-  setTaskBarColor: (color: GanttCustomization["taskBarColor"]) => void;
-  setProjectBarColor: (color: GanttCustomization["projectBarColor"]) => void;
-  setTaskBarProgressColor: (
-    color: GanttCustomization["taskBarProgressColor"],
-  ) => void;
+  setTaskBarRadius: (radius: GanttCustomization['taskBarRadius']) => void;
+  setTaskBarColor: (color: GanttCustomization['taskBarColor']) => void;
+  setTaskBarProgressColor: (color: GanttCustomization['taskBarProgressColor']) => void;
   setDateFormat: (format: DateFormat) => void;
   setTimeFormat: (format: TimeFormat) => void;
   toggleColumnVisibility: (columnId: string) => void;
@@ -148,6 +152,12 @@ interface DashboardActions {
   setShowDependencies: (show: boolean) => void;
   setShowDayLabels: (show: boolean) => void;
   setAvailableScales: (scales: TimelineScale[]) => void;
+  setShowTitle: (show: boolean) => void;
+  setTimelineTodayColor: (color: GanttColor) => void;
+  setTimelineWeekendColor: (color: GanttColor) => void;
+  setTimelineHeaderColor: (color: GanttColor) => void;
+  setMilestoneBackgroundColor: (color: GanttColor) => void;
+  setMilestoneShape: (shape: MilestoneShape) => void;
 }
 
 type DashboardStore = DashboardState & DashboardActions;
@@ -180,7 +190,13 @@ function createInitialState(): DashboardState {
     ganttListHeaderColor: undefined,
     showDependencies: true,
     showDayLabels: true,
-    availableScales: ["hour", "day", "week", "month", "quarter", "year"],
+    availableScales: ['hour', 'day', 'week', 'month', 'quarter', 'year'],
+    showTitle: true,
+    timelineTodayColor: 'rose',
+    timelineWeekendColor: 'slate',
+    timelineHeaderColor: 'slate',
+    milestoneBackgroundColor: 'amber',
+    milestoneShape: 'diamond',
   };
 }
 
@@ -371,6 +387,12 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
   setShowDependencies: (showDependencies) => set({ showDependencies }),
   setShowDayLabels: (showDayLabels) => set({ showDayLabels }),
   setAvailableScales: (availableScales) => set({ availableScales }),
+  setShowTitle: (showTitle) => set({ showTitle }),
+  setTimelineTodayColor: (timelineTodayColor) => set({ timelineTodayColor }),
+  setTimelineWeekendColor: (timelineWeekendColor) => set({ timelineWeekendColor }),
+  setTimelineHeaderColor: (timelineHeaderColor) => set({ timelineHeaderColor }),
+  setMilestoneBackgroundColor: (milestoneBackgroundColor) => set({ milestoneBackgroundColor }),
+  setMilestoneShape: (milestoneShape) => set({ milestoneShape }),
 }));
 
 // ── Selectors ──
@@ -413,12 +435,21 @@ export const selectShowDayLabels = (state: DashboardStore) =>
   state.showDayLabels;
 export const selectAvailableScales = (state: DashboardStore) =>
   state.availableScales;
+export const selectMilestoneBackgroundColor = (state: DashboardStore) =>
+  state.milestoneBackgroundColor;
+export const selectMilestoneShape = (state: DashboardStore) =>
+  state.milestoneShape;
 
 // NEW: Date/Time format selectors
 export const selectDateFormat = (state: DashboardStore) =>
   state.customization.dateFormat;
 export const selectTimeFormat = (state: DashboardStore) =>
   state.customization.timeFormat;
+
+export const selectShowTitle = (state: DashboardStore) => state.showTitle;
+export const selectTimelineTodayColor = (state: DashboardStore) => state.timelineTodayColor;
+export const selectTimelineWeekendColor = (state: DashboardStore) => state.timelineWeekendColor;
+export const selectTimelineHeaderColor = (state: DashboardStore) => state.timelineHeaderColor;
 
 export const selectVisibleTasks = (state: DashboardStore): VisibleTask[] => {
   return state.positionedTasks;
