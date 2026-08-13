@@ -11,21 +11,25 @@ export default function App() {
         styleOptions={{
           rowHeight: 40,
           taskBar: {
-            barColor: "emerald",
-            projectBarColor: "rose",
+            barColor: "amber",
+            projectBarColor: "amber",
             progressColor: "emerald",
-            radius: "full",
+            radius: "md",
             showTitle: true,
           },
 
-          milestone: { shape: "circle" },
+          milestone: { shape: "square" },
           timeline: {
-            // headerColor: 'rose',
-            // weekendColor: "amber",
-            // todayColor: "rose"
+            headerColor: 'rose',
+            weekendColor: "amber",
+            todayColor: "rose"
           },
         }}
-        displayOptions={{ scale: "day", showDependencies: false }}
+        displayOptions={{
+          scale: "day",
+          showDependencies: false,
+          showDayLabels: false,
+        }}
         onTaskDoubleClick={myFn}
       />
     </div>
