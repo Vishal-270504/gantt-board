@@ -100,7 +100,7 @@ export const SCALE_CONFIGS: Record<TimelineScale, ScaleConfig> = {
   },
 
   month: {
-    unitWidth: 24,
+    unitWidth: 30,
     msPerUnit: MS_PER_DAY,
     getUnits: eachDay,
     getGroups: (start, end) =>

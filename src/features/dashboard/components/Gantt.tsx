@@ -4,7 +4,6 @@ import { Timeline } from "@/features/Timeline/Timeline";
 import { ScaleNavbar } from "./ScaleNavbar";
 import type {
   Task,
-  TimelineScale,
   GanttColor,
   TaskbarRadiusType,
   ColumnConfig,
@@ -30,14 +29,23 @@ interface GanttProps {
       projectBarColor?: GanttColor;
       progressColor?: GanttColor;
       radius?: TaskbarRadiusType;
+      showTitle?: boolean;
+    };
+    timeline?: {
+      weekendColor?: GanttColor;
+      headerColor?: GanttColor;
+      todayColor?: GanttColor;
     };
   };
+
+  onTaskDoubleClick?: () => void;
 }
 
 export function Gantt({
   tasks,
   displayOptions,
   columns,
+  onTaskDoubleClick,
   styleOptions,
 }: GanttProps) {
   const setTasks = useDashboardStore((s) => s.setTasks);
@@ -76,11 +84,32 @@ export function Gantt({
       setGanttListHeaderColor(styleOptions.ganttList.headerColor);
     }
 
+    if (onTaskDoubleClick) {
+      setCustomization({
+        onTaskDoubleClick,
+      });
+    }
+
     setCustomization({
+      //taskbar
       taskBarColor: styleOptions?.taskBar?.barColor,
       taskBarProgressColor: styleOptions?.taskBar?.progressColor,
       taskBarRadius: styleOptions?.taskBar?.radius,
       projectBarColor: styleOptions?.taskBar?.projectBarColor,
+      showTitle: styleOptions?.taskBar?.showTitle,
+
+      // timeline
+      timeline: {
+        headerColor: styleOptions?.timeline?.headerColor || "slate",
+        weekendColor: styleOptions?.timeline?.weekendColor || "slate",
+        todayColor: styleOptions?.timeline?.todayColor || "slate",
+        showDayLabels: displayOptions?.showDayLabels ?? true,
+      },
+
+      // dependency arrows
+      dependencyArrows: {
+        showDependencies: displayOptions?.showDependencies ?? true,
+      },
     });
   }, [styleOptions, displayOptions, tasks]);
 

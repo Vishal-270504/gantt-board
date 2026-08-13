@@ -27,6 +27,7 @@ interface TaskBarProps {
   progressColor?: GanttColor;
   radius?: GanttCustomization["taskBarRadius"];
   onDoubleClick?: () => void;
+  showTitle?: GanttCustomization["showTitle"]
 }
 
 // Tailwind classes are written out explicitly so the JIT compiler can detect them.
@@ -103,6 +104,7 @@ export function TaskBar({
   progressColor = "indigo",
   radius = "md",
   onDoubleClick,
+  showTitle
 }: TaskBarProps) {
   const isProject = type === "project";
   const customization = useDashboardStore((s) => s.customization);
@@ -155,7 +157,7 @@ export function TaskBar({
                 style={progressStyle}
               />
             )}
-            {titleFits && (
+            {showTitle && titleFits && (
               <span
                 className={cn(
                   "absolute inset-0 flex items-center px-2 text-xs truncate",

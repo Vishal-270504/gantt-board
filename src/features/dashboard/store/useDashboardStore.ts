@@ -134,9 +134,7 @@ interface DashboardActions {
   setScale: (scale: TimelineScale) => void;
   setScrollTop: (n: number) => void;
   setCustomization: (customization: Partial<GanttCustomization>) => void;
-  setTaskBarRadius: (radius: GanttCustomization["taskBarRadius"]) => void;
-  setTaskBarColor: (color: GanttCustomization["taskBarColor"]) => void;
-  setProjectBarColor: (color: GanttCustomization["projectBarColor"]) => void;
+
   setTaskBarProgressColor: (
     color: GanttCustomization["taskBarProgressColor"],
   ) => void;
@@ -297,7 +295,6 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       visibleTaskCount: nextPositioned.length,
     });
   },
-
   setScale: (scale) => {
     const state = get();
     const nextPositioned = computePositionedTasks(
@@ -318,21 +315,6 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
   setCustomization: (partial) =>
     set((state) => ({
       customization: { ...state.customization, ...partial },
-    })),
-
-  setTaskBarRadius: (taskBarRadius) =>
-    set((state) => ({
-      customization: { ...state.customization, taskBarRadius },
-    })),
-
-  setProjectBarColor: (projectBarColor) =>
-    set((state) => ({
-      customization: { ...state.customization, projectBarColor },
-    })),
-
-  setTaskBarColor: (taskBarColor) =>
-    set((state) => ({
-      customization: { ...state.customization, taskBarColor },
     })),
 
   setTaskBarProgressColor: (taskBarProgressColor) =>

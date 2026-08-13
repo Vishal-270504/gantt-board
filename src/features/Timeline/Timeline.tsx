@@ -14,6 +14,7 @@ import { TaskBar } from "../../components/Timeline/Taskbar.tsx";
 import { MilestoneMarker } from "../../components/Timeline/MilestoneMarker.tsx";
 import { DependencyArrows } from "../../components/Timeline/DependencyArrows.tsx";
 import { getOffset } from "./ScaleConfig";
+import type { GanttColor } from "../dashboard/index.ts";
 
 interface TimelineProps {
   containerRef: React.RefObject<HTMLDivElement | null>;
@@ -25,8 +26,22 @@ export function Timeline({ containerRef }: TimelineProps) {
   const scale = useDashboardStore(selectScale);
   const tasks = useDashboardStore((s) => s.tasks);
   const positionedTasks = useDashboardStore(selectPositionedTasks);
-
+  const customization = useDashboardStore((s) => s.customization);
   const didScrollRef = useRef<string | null>(null);
+
+  const ganttColorClasses: Record<GanttColor, string> = {
+    slate: "bg-slate-500",
+    blue: "bg-blue-500",
+    indigo: "bg-indigo-500",
+    emerald: "bg-emerald-500",
+    amber: "bg-amber-500",
+    rose: "bg-rose-500",
+    violet: "bg-violet-500",
+    cyan: "bg-cyan-500",
+  };
+
+  const todayColorClass =
+    ganttColorClasses[customization.timeline?.todayColor!];
 
   // containerHeight + ResizeObserver removed — useVirtualizer measures
   // the scroll container itself via getScrollElement, no manual tracking needed
@@ -75,15 +90,15 @@ export function Timeline({ containerRef }: TimelineProps) {
   });
 
   return (
-    <div
-      ref={containerRef}
-      className="h-full overflow-auto relative"
-    >
+    <div ref={containerRef} className="h-full overflow-auto relative">
       <div className="relative w-max min-w-full">
         <TimelineHeader
           startDate={timelineStart}
           endDate={timelineEnd}
           scale={scale}
+          showDayLabels={customization.timeline?.showDayLabels}
+          headerColor={customization.timeline?.headerColor}
+          weekendColor={customization.timeline?.weekendColor}
         />
         <div style={{ height: totalHeight, position: "relative" }}>
           <TimelineGrid
@@ -104,7 +119,7 @@ export function Timeline({ containerRef }: TimelineProps) {
 
           {/* Today marker */}
           <div
-            className="absolute w-px bg-red-500 pointer-events-none"
+            className={`absolute w-px ${todayColorClass} pointer-events-none`}
             style={{
               left: getOffset(new Date(), timelineStart, scale),
               top: 0,
@@ -112,7 +127,9 @@ export function Timeline({ containerRef }: TimelineProps) {
             }}
           />
 
-          <DependencyArrows tasks={renderedRows} rowHeight={ROW_HEIGHT} />
+          {customization?.dependencyArrows?.showDependencies && (
+            <DependencyArrows tasks={renderedRows} rowHeight={ROW_HEIGHT} />
+          )}
           {renderedRows.map((t) => {
             if (!t) return null;
             return t.type === "milestone" ? (
@@ -124,6 +141,9 @@ export function Timeline({ containerRef }: TimelineProps) {
               />
             ) : (
               <TaskBar
+                onDoubleClick={() => {
+                  customization.onTaskDoubleClick?.();
+                }}
                 key={t.id}
                 left={t.left}
                 width={t.width}
@@ -133,6 +153,7 @@ export function Timeline({ containerRef }: TimelineProps) {
                 title={t.title}
                 hasParentId={t.parentId === null}
                 assignee={t.assignee}
+                showTitle={customization.showTitle}
                 type={t.type}
               />
             );
