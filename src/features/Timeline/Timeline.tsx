@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   useDashboardStore,
@@ -42,7 +42,6 @@ export function Timeline({ containerRef }: TimelineProps) {
   const timelineStart = useDashboardStore(selectTimelineStart);
   const timelineEnd = useDashboardStore(selectTimelineEnd);
   const scale = useDashboardStore(selectScale);
-  const tasks = useDashboardStore((s) => s.tasks);
   const positionedTasks = useDashboardStore(selectPositionedTasks);
   const rowHeight = useDashboardStore(selectRowHeight);
   const showDayLabels = useDashboardStore(selectTimelineShowDayLabels);
@@ -52,12 +51,8 @@ export function Timeline({ containerRef }: TimelineProps) {
   const showDependencies = useDashboardStore(selectShowDependencyArrows);
   const onTaskDoubleClick = useDashboardStore(selectTaskDoubleClick);
   const showTitle = useDashboardStore(selectShowTitle);
-  const didScrollRef = useRef<string | null>(null);
 
   const todayColorClass = GANTT_COLOR_CLASSES[timelineTodayColor];
-
-  // containerHeight + ResizeObserver removed — useVirtualizer measures
-  // the scroll container itself via getScrollElement, no manual tracking needed
 
   const virtualizer = useVirtualizer({
     count: positionedTasks.length,
@@ -68,30 +63,6 @@ export function Timeline({ containerRef }: TimelineProps) {
 
   const virtualItems = virtualizer.getVirtualItems();
   const totalHeight = virtualizer.getTotalSize();
-
-  // Horizontal scroll-to-earliest-task on scale change
-  useEffect(() => {
-    const key = scale;
-    if (didScrollRef.current === key) return;
-    didScrollRef.current = key;
-
-    const el = containerRef.current;
-    if (!el) return;
-
-    let earliestMs = Infinity;
-    tasks.forEach((t) => {
-      const ms = new Date(t.startDate).getTime();
-      if (!isNaN(ms) && ms < earliestMs) earliestMs = ms;
-    });
-    if (!isFinite(earliestMs)) return;
-
-    const earliestDate = new Date(earliestMs);
-    const offset = getOffset(earliestDate, timelineStart, scale);
-
-    requestAnimationFrame(() => {
-      el.scrollLeft = Math.max(0, offset - 40);
-    });
-  }, [scale, tasks, timelineStart, containerRef]);
 
   const renderedRows = virtualItems.map((vi) => {
     const t = positionedTasks[vi.index];

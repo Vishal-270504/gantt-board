@@ -61,7 +61,7 @@ function TimelineHeaderComponent({
   startDate,
   endDate,
   scale,
-  showDayLabels = true,
+  showDayLabels = false,
   weekendColor,
   headerColor,
 }: TimelineHeaderProps) {

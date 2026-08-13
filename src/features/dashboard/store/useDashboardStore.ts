@@ -15,7 +15,6 @@ import { DEFAULT_GANTT_CUSTOMIZATION } from "../constants";
 import { getOffset } from "@/features/Timeline/ScaleConfig";
 import { toDate } from "@/lib/dateutils";
 
-console.log("State")
 const ROW_HEIGHT = 40;
 
 export const getTimelineRangeForTasks = (tasks: Task[]) => {
@@ -183,12 +182,12 @@ function createInitialState(): DashboardState {
     ganttListHeaderColor: undefined,
     showDependencies: true,
     showDayLabels: true,
-    availableScales: ['hour', 'day', 'week', 'month', 'quarter', 'year'],
-    timelineTodayColor: 'rose',
-    timelineWeekendColor: 'slate',
-    timelineHeaderColor: 'slate',
-    milestoneBackgroundColor: 'amber',
-    milestoneShape: 'diamond',
+    availableScales: ["hour", "day", "week", "month", "quarter", "year"],
+    timelineTodayColor: "rose",
+    timelineWeekendColor: "slate",
+    timelineHeaderColor: "slate",
+    milestoneBackgroundColor: "amber",
+    milestoneShape: "diamond",
   };
 }
 
@@ -337,7 +336,6 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     });
   },
 
-
   setCustomization: (partial) =>
     set((state) => ({
       customization: { ...state.customization, ...partial },
@@ -378,7 +376,8 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
 
   setShowDependencies: (showDependencies) => set({ showDependencies }),
   setAvailableScales: (availableScales) => set({ availableScales }),
-  setMilestoneBackgroundColor: (milestoneBackgroundColor) => set({ milestoneBackgroundColor }),
+  setMilestoneBackgroundColor: (milestoneBackgroundColor) =>
+    set({ milestoneBackgroundColor }),
   setMilestoneShape: (milestoneShape) => set({ milestoneShape }),
 }));
 
