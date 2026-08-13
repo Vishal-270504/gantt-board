@@ -20,7 +20,6 @@ interface GanttProps {
   tasks: Task[];
   displayOptions?: DisplayOptions;
   columns?: ColumnConfig[];
-
   styleOptions?: {
     rowHeight?: number;
     ganttList?: {
@@ -43,8 +42,7 @@ interface GanttProps {
       headerColor?: GanttColor;
     };
   };
-
-  onTaskDoubleClick?: () => void;
+  onTaskDoubleClick?: (task: Task) => void;
 }
 
 export function Gantt({
@@ -97,27 +95,11 @@ export function Gantt({
     }
 
     setCustomization({
-      onTaskDoubleClick,
-
-      //taskbar
       taskBarColor: styleOptions?.taskBar?.barColor,
       taskBarProgressColor: styleOptions?.taskBar?.progressColor,
       taskBarRadius: styleOptions?.taskBar?.radius,
       projectBarColor: styleOptions?.taskBar?.projectBarColor,
       showTitle: styleOptions?.taskBar?.showTitle,
-
-      // timeline
-      timeline: {
-        headerColor: styleOptions?.timeline?.headerColor || "slate",
-        weekendColor: styleOptions?.timeline?.weekendColor || "slate",
-        todayColor: styleOptions?.timeline?.todayColor || "slate",
-        showDayLabels: displayOptions?.showDayLabels ?? true,
-      },
-
-      // dependency arrows
-      dependencyArrows: {
-        showDependencies: displayOptions?.showDependencies ?? true,
-      },
     });
 
     // Wire milestone styles from styleOptions into the store
