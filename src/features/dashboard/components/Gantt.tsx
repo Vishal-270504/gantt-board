@@ -110,10 +110,13 @@ export function Gantt({
       projectBarColor: styleOptions?.taskBar?.projectBarColor,
       showTitle: styleOptions?.taskBar?.showTitle,
       timeline: {
-        showDayLabels: displayOptions?.showDayLabels || true,
+        showDayLabels: displayOptions?.showDayLabels ?? true,
         weekendColor: styleOptions?.timeline?.weekendColor || "slate",
         todayColor: styleOptions?.timeline?.todayColor || "slate",
         headerColor: styleOptions?.timeline?.headerColor || "slate",
+      },
+      dependencyArrows: {
+        showDependencies: displayOptions?.showDependencies,
       },
     });
 
