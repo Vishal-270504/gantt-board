@@ -1,8 +1,4 @@
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
+import {  Tooltip,  TooltipTrigger,  TooltipContent } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type {
   Task,
@@ -109,9 +105,9 @@ export function TaskBar({
   const isProject = type === "project";
   const customization = useDashboardStore((s) => s.customization);
 
-  const finalBarColor = !hasParentId
-    ? (customization.taskBarColor ?? barColor)
-    : (customization.projectBarColor ?? projectBarColor);
+  const finalBarColor = isProject
+    ? (customization.projectBarColor ?? projectBarColor)
+    : (customization.taskBarColor ?? barColor);
 
   const color = BAR_COLOR_STYLES[finalBarColor];
 
@@ -170,7 +166,7 @@ export function TaskBar({
           </div>
 
           {/* Title shown beside the bar when it doesn't fit inside */}
-          {!titleFits && (
+          {showTitle && !titleFits && (
             <span
               className={cn(
                 "ml-2 text-xs whitespace-nowrap font-medium",

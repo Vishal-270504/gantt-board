@@ -6,22 +6,22 @@ import { LoadingState } from "./LoadingState";
 import { EmptyState } from "./EmptyState";
 import { useEffect, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import type { ColumnConfig } from "../types";
+import type { ColumnConfig, Task } from "../types";
 
 interface VirtualizedGanttTableBodyProps {
   widths: ColumnWidths;
   totalWidth: number;
   containerRef: React.RefObject<HTMLDivElement | null>;
-  // onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   columns?: ColumnConfig[];
+  onTaskDoubleClick?: (task: Task) => void;
 }
 
 export function VirtualizedGanttTableBody({
   widths,
   totalWidth,
   containerRef,
-  // onScroll,
   columns,
+  onTaskDoubleClick,
 }: VirtualizedGanttTableBodyProps) {
   const tasks = useDashboardStore((state) => state.tasks);
   const isLoading = useDashboardStore(selectDashboardIsLoading);
@@ -71,6 +71,7 @@ export function VirtualizedGanttTableBody({
               hasChildren={tasks.some((t) => t.parentId === task.id)}
               widths={widths}
               columns={columns}
+              onTaskDoubleClick={onTaskDoubleClick}
               style={{ position: "absolute", top: virtualItem.start, left: 0, right: 0, height: ROW_HEIGHT }}
             />
           );

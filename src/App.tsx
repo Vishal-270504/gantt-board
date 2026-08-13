@@ -2,7 +2,7 @@ import { Gantt, mockTasks } from "./features/dashboard";
 
 export default function App() {
   function myFn() {
-    console.log("Some log")
+    console.log("Some log");
   }
   return (
     <div className="min-h-screen w-full">
@@ -18,9 +18,10 @@ export default function App() {
             showTitle: true,
           },
 
+          milestone: { shape: "circle" },
           timeline: {
-            // headerColor: 'rose'
-            // weekendColor: "amber"
+            // headerColor: 'rose',
+            // weekendColor: "amber",
             // todayColor: "rose"
           },
         }}

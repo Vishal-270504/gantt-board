@@ -59,7 +59,9 @@ export type TimelineScale =
   | "day"
   | "hour";
 
-export type TaskbarRadiusType = "none" | "sm" | "md" | "lg" | "full";
+export type TaskbarRadiusType = 'none' | 'sm' | 'md' | 'lg' | 'full'
+
+export type MilestoneShape = 'diamond' | 'circle' | 'square' | 'triangle';;
 export interface DisplayOptions {
   scale?: TimelineScale;
   availableScales?: TimelineScale[];

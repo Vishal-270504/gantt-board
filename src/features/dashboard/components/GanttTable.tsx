@@ -4,18 +4,15 @@ import { VirtualizedGanttTableBody } from "./VirtualizedGanttTableBody";
 import { GANTT_COLUMNS, getInitialColumnWidths } from "../constants";
 import type { ColumnWidths, GanttColumn } from "../constants";
 import { useDashboardStore, selectVisibleColumns } from "../store/useDashboardStore";
-import type { ColumnConfig } from "../types";
+import type { ColumnConfig, Task } from "../types";
 
 interface GanttTableProps {
-  // syncScrollTop?: number;
   containerRef: React.RefObject<HTMLDivElement | null>;
-  // onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   columns?: ColumnConfig[];
+  onTaskDoubleClick?: (task: Task) => void;
 }
 
-export function GanttTable({ containerRef, 
-  // onScroll,
-   columns }: GanttTableProps) {
+export function GanttTable({ containerRef, columns, onTaskDoubleClick }: GanttTableProps) {
   const [widths, setWidths] = useState<ColumnWidths>(getInitialColumnWidths);
   const visibleColumns = useDashboardStore(selectVisibleColumns);
 
@@ -33,7 +30,7 @@ export function GanttTable({ containerRef,
   // Calculate widths based on column configurations
   const columnWidths = useMemo<ColumnWidths>(() => {
     const initialWidths = getInitialColumnWidths();
-    
+
     if (columns && columns.length > 0) {
       const newWidths = { ...initialWidths };
       columns.forEach(col => {
@@ -43,7 +40,7 @@ export function GanttTable({ containerRef,
       });
       return newWidths;
     }
-    
+
     return widths;
   }, [columns, widths]);
 
@@ -64,6 +61,7 @@ export function GanttTable({ containerRef,
         totalWidth={totalWidth}
         containerRef={containerRef}
         columns={columns}
+        onTaskDoubleClick={onTaskDoubleClick}
       />
     </div>
   );

@@ -8,6 +8,7 @@ import type {
   DateFormat,
   TimeFormat,
   GanttColor,
+  MilestoneShape,
 } from "../types";
 import { mockTasks } from "../mockData";
 import { DEFAULT_GANTT_CUSTOMIZATION } from "../constants";
@@ -117,6 +118,11 @@ interface DashboardState {
   showDependencies: boolean;
   showDayLabels: boolean;
   availableScales: TimelineScale[];
+  timelineTodayColor: GanttColor;
+  timelineWeekendColor: GanttColor;
+  timelineHeaderColor: GanttColor;
+  milestoneBackgroundColor: GanttColor;
+  milestoneShape: MilestoneShape;
 }
 
 interface DashboardActions {
@@ -144,8 +150,9 @@ interface DashboardActions {
   setVisibleColumns: (columns: string[]) => void;
   setGanttListHeaderColor: (color: GanttColor | undefined) => void;
   setShowDependencies: (show: boolean) => void;
-  setShowDayLabels: (show: boolean) => void;
   setAvailableScales: (scales: TimelineScale[]) => void;
+  setMilestoneBackgroundColor: (color: GanttColor) => void;
+  setMilestoneShape: (shape: MilestoneShape) => void;
 }
 
 type DashboardStore = DashboardState & DashboardActions;
@@ -178,7 +185,12 @@ function createInitialState(): DashboardState {
     ganttListHeaderColor: undefined,
     showDependencies: true,
     showDayLabels: true,
-    availableScales: ["hour", "day", "week", "month", "quarter", "year"],
+    availableScales: ['hour', 'day', 'week', 'month', 'quarter', 'year'],
+    timelineTodayColor: 'rose',
+    timelineWeekendColor: 'slate',
+    timelineHeaderColor: 'slate',
+    milestoneBackgroundColor: 'amber',
+    milestoneShape: 'diamond',
   };
 }
 
@@ -351,8 +363,9 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
   setGanttListHeaderColor: (color) => set({ ganttListHeaderColor: color }),
 
   setShowDependencies: (showDependencies) => set({ showDependencies }),
-  setShowDayLabels: (showDayLabels) => set({ showDayLabels }),
   setAvailableScales: (availableScales) => set({ availableScales }),
+  setMilestoneBackgroundColor: (milestoneBackgroundColor) => set({ milestoneBackgroundColor }),
+  setMilestoneShape: (milestoneShape) => set({ milestoneShape }),
 }));
 
 // ── Selectors ──
@@ -395,6 +408,10 @@ export const selectShowDayLabels = (state: DashboardStore) =>
   state.showDayLabels;
 export const selectAvailableScales = (state: DashboardStore) =>
   state.availableScales;
+export const selectMilestoneBackgroundColor = (state: DashboardStore) =>
+  state.milestoneBackgroundColor;
+export const selectMilestoneShape = (state: DashboardStore) =>
+  state.milestoneShape;
 
 // NEW: Date/Time format selectors
 export const selectDateFormat = (state: DashboardStore) =>

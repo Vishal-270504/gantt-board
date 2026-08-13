@@ -8,6 +8,7 @@ import type {
   TaskbarRadiusType,
   ColumnConfig,
   DisplayOptions,
+  MilestoneShape,
 } from "../types";
 import { useDashboardStore } from "../store/useDashboardStore";
 import { useSyncedScroll } from "./useSyncedScroll";
@@ -19,6 +20,7 @@ interface GanttProps {
   tasks: Task[];
   displayOptions?: DisplayOptions;
   columns?: ColumnConfig[];
+
   styleOptions?: {
     rowHeight?: number;
     ganttList?: {
@@ -31,10 +33,14 @@ interface GanttProps {
       radius?: TaskbarRadiusType;
       showTitle?: boolean;
     };
+    milestone?: {
+      backgroundColor?: GanttColor;
+      shape?: MilestoneShape;
+    };
     timeline?: {
+      todayColor?: GanttColor;
       weekendColor?: GanttColor;
       headerColor?: GanttColor;
-      todayColor?: GanttColor;
     };
   };
 
@@ -57,10 +63,11 @@ export function Gantt({
   const setGanttListHeaderColor = useDashboardStore(
     (s) => s.setGanttListHeaderColor,
   );
-  const setShowDependencies = useDashboardStore((s) => s.setShowDependencies);
-  const setShowDayLabels = useDashboardStore((s) => s.setShowDayLabels);
   const setTimeFormat = useDashboardStore((s) => s.setTimeFormat);
-  const setAvailableScales = useDashboardStore((s) => s.setAvailableScales);
+  const setMilestoneBackgroundColor = useDashboardStore(
+    (s) => s.setMilestoneBackgroundColor,
+  );
+  const setMilestoneShape = useDashboardStore((s) => s.setMilestoneShape);
 
   useEffect(() => {
     const expandableIds = tasks.map((t) => t.id);
@@ -111,46 +118,52 @@ export function Gantt({
         showDependencies: displayOptions?.showDependencies ?? true,
       },
     });
-  }, [styleOptions, displayOptions, tasks]);
 
-  if (columns && columns.length > 0) {
-    const visibleCols = columns
-      .filter((col) => col.visible !== false)
-      .map((col) => col.key);
-    setVisibleColumns(visibleCols);
-  } else {
-    // Reset to default visible columns if no columns prop is provided
-    const defaultVisibleColumns = [
-      "title",
-      "startDate",
-      "endDate",
-      "duration",
-      "progress",
-      "predecessors",
-    ];
-    setVisibleColumns(defaultVisibleColumns);
-  }
+    // Wire milestone styles from styleOptions into the store
+    if (styleOptions?.milestone?.backgroundColor) {
+      setMilestoneBackgroundColor(styleOptions.milestone.backgroundColor);
+    }
+    if (styleOptions?.milestone?.shape) {
+      setMilestoneShape(styleOptions.milestone.shape);
+    }
 
-  // Handle displayOptions
-  if (displayOptions?.showDependencies !== undefined) {
-    setShowDependencies(displayOptions.showDependencies);
-  }
+    // Wire columns config into store
+    if (columns && columns.length > 0) {
+      const visibleCols = columns
+        .filter((col) => col.visible !== false)
+        .map((col) => col.key);
+      setVisibleColumns(visibleCols);
+    } else {
+      const defaultVisibleColumns = [
+        "title",
+        "startDate",
+        "endDate",
+        "duration",
+        "progress",
+        "predecessors",
+      ];
+      setVisibleColumns(defaultVisibleColumns);
+    }
 
-  if (displayOptions?.showDayLabels !== undefined) {
-    setShowDayLabels(displayOptions.showDayLabels);
-  } else {
-    // Auto-hide for quarter/year scales
-    const currentScale = displayOptions?.scale || "week";
-    setShowDayLabels(currentScale !== "quarter" && currentScale !== "year");
-  }
-
-  if (displayOptions?.timeFormat) {
-    setTimeFormat(displayOptions.timeFormat);
-  }
-
-  if (displayOptions?.availableScales) {
-    setAvailableScales(displayOptions.availableScales);
-  }
+    // Wire timeFormat
+    if (displayOptions?.timeFormat) {
+      setTimeFormat(displayOptions.timeFormat);
+    }
+  }, [
+    styleOptions,
+    displayOptions,
+    tasks,
+    columns,
+    setTasks,
+    setScale,
+    setRowHeight,
+    setGanttListHeaderColor,
+    setCustomization,
+    setMilestoneBackgroundColor,
+    setMilestoneShape,
+    setVisibleColumns,
+    setTimeFormat,
+  ]);
 
   const tableRef = useRef<HTMLElement>(null);
   const timelineContainerRef = useRef<HTMLDivElement>(null);
@@ -208,25 +221,21 @@ export function Gantt({
         } as React.CSSProperties
       }
     >
-      {/* Top bar: full-width navbar with the timeline scale selector */}
       <ScaleNavbar />
 
       <div className="flex flex-1 min-h-0">
-        {/* Left Panel: Fixed Task Table Container */}
         <aside
           ref={tableRef}
           className="flex-shrink-0 h-full overflow-hidden border-r z-10 bg-card flex flex-col"
           style={{ width: leftPanelWidth }}
         >
-          <GanttTable containerRef={leftRef} />
-          {/* <div className="overflow-y-auto" ref={leftRef}>
-            {Array.from({ length: 100 }).map((_, i) => (
-              <div key={i}>Row {i}</div>
-            ))}
-          </div> */}
+          <GanttTable
+            containerRef={leftRef}
+            columns={columns}
+            onTaskDoubleClick={onTaskDoubleClick}
+          />
         </aside>
 
-        {/* Vertical resize handle */}
         <div
           className="z-20 w-1.5 cursor-col-resize hover:bg-primary/30 active:bg-primary/40 shrink-0"
           onPointerDown={startResize}
@@ -238,7 +247,6 @@ export function Gantt({
           aria-label="Resize left panel"
         />
 
-        {/* Right Panel: Timeline Container */}
         <main
           ref={timelineContainerRef}
           className="flex-1 h-full overflow-hidden relative bg-muted/20"
