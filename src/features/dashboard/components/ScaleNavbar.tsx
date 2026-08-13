@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDashboardStore, selectScale } from "../store/useDashboardStore";
-import type { TimelineScale } from "../types/index";
 
 export function ScaleNavbar() {
   const scale = useDashboardStore(selectScale);
