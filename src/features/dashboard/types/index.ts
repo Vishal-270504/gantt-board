@@ -1,17 +1,21 @@
 // ── Color Palette (predefined, not arbitrary) ──
 export type GanttColor =
-  | 'slate'
-  | 'blue'
-  | 'indigo'
-  | 'emerald'
-  | 'amber'
-  | 'rose'
-  | 'violet'
-  | 'cyan';
+  | "slate"
+  | "blue"
+  | "indigo"
+  | "emerald"
+  | "amber"
+  | "rose"
+  | "violet"
+  | "cyan";
 
 // ── Date/Time Format Options ──
-export type DateFormat = 'DD/MM/YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD' | 'DD MMM YYYY';
-export type TimeFormat = '12-hour' | '24-hour';
+export type DateFormat =
+  | "DD/MM/YYYY"
+  | "MM/DD/YYYY"
+  | "YYYY-MM-DD"
+  | "DD MMM YYYY";
+export type TimeFormat = "12-hour" | "24-hour";
 
 // ── Core Task Types ──
 export interface Task {
@@ -21,7 +25,7 @@ export interface Task {
   progress: number; // 1 - 100
   startDate: string; // ISO 8601 date string
   endDate: string; // ISO 8601 date string
-  type?: 'project' | 'task' | 'milestone';
+  type?: "project" | "task" | "milestone";
   predecessors?: string[]; // Array of dependency Task IDs
   parentId: string | null;
 }
@@ -47,7 +51,13 @@ export interface GanttRow extends VisibleTask {
   width: number;
 }
 
-export type TimelineScale = 'year' | 'quarter' | 'month' | 'week' | 'day' | 'hour';
+export type TimelineScale =
+  | "year"
+  | "quarter"
+  | "month"
+  | "week"
+  | "day"
+  | "hour";
 
 export type TaskbarRadiusType = 'none' | 'sm' | 'md' | 'lg' | 'full'
 
@@ -58,10 +68,18 @@ export interface DisplayOptions {
   showDependencies?: boolean;
   showDayLabels?: boolean;
   timeFormat?: TimeFormat;
+  showDependenices?: boolean;
 }
 
 // ── Column Configuration ──
-export type ColumnKey = "title" | "startDate" | "endDate" | "duration" | "progress" | "predecessors" | "assignee";
+export type ColumnKey =
+  | "title"
+  | "startDate"
+  | "endDate"
+  | "duration"
+  | "progress"
+  | "predecessors"
+  | "assignee";
 
 export interface ColumnConfig {
   key: ColumnKey;
@@ -73,16 +91,32 @@ export interface ColumnConfig {
 
 // ── Gantt Customization ──
 export interface GanttCustomization {
-  taskBarRadius: TaskbarRadiusType;
-  projectBarColor: GanttColor;
-  taskBarColor: GanttColor;
-  taskBarProgressColor: GanttColor;
-  showTitle: boolean;
   visibleColumns: string[];
   dateFormat: DateFormat;
   timeFormat: TimeFormat;
   ganttList?: {
     headerColor?: GanttColor;
+  };
+
+  // timeline
+  taskBarRadius: TaskbarRadiusType;
+  projectBarColor: GanttColor;
+  taskBarProgressColor: GanttColor;
+  taskBarColor: GanttColor;
+  showTitle: boolean;
+  
+  onTaskDoubleClick?: () => void;
+
+  timeline?: {
+    weekendColor: GanttColor;
+    headerColor: GanttColor;
+    todayColor: GanttColor;
+    showDayLabels: boolean;
+  };
+
+  // dependency arrow
+  dependencyArrows?: {
+    showDependencies?: boolean;
   };
 }
 

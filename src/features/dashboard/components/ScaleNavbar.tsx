@@ -1,26 +1,23 @@
+import { useEffect, useState } from "react";
 import { useDashboardStore, selectScale } from "../store/useDashboardStore";
 import type { TimelineScale } from "../types/index";
-
-const SCALES: TimelineScale[] = [
-  "year",
-  "quarter",
-  "month",
-  "week",
-  "day",
-  "hour",
-];
 
 export function ScaleNavbar() {
   const scale = useDashboardStore(selectScale);
   const setScale = useDashboardStore((s) => s.setScale);
+  const availableScales = useDashboardStore((s) => s.availableScales);
+  const setAvailableScales = useDashboardStore((s) => s.setAvailableScales);
 
+  useEffect(() => {
+    setAvailableScales(availableScales);
+  }, []);
   return (
     <nav className="flex items-center gap-3 px-4 h-12 border-b border-border bg-card z-30 shrink-0">
       <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
         Scale
       </span>
       <div className="flex items-center gap-1.5 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {SCALES.map((s) => (
+        {availableScales.map((s) => (
           <button
             key={s}
             onClick={() => setScale(s)}

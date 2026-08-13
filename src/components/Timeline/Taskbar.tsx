@@ -6,7 +6,7 @@ import type {
   GanttCustomization,
 } from "../../features/dashboard/types";
 import type { CSSProperties } from "react";
-import { useDashboardStore, selectShowTitle } from "@/features/dashboard";
+import { useDashboardStore } from "@/features/dashboard";
 
 interface TaskBarProps {
   left: number;
@@ -23,6 +23,7 @@ interface TaskBarProps {
   progressColor?: GanttColor;
   radius?: GanttCustomization["taskBarRadius"];
   onDoubleClick?: () => void;
+  showTitle?: GanttCustomization["showTitle"]
 }
 
 // Tailwind classes are written out explicitly so the JIT compiler can detect them.
@@ -99,10 +100,10 @@ export function TaskBar({
   progressColor = "indigo",
   radius = "md",
   onDoubleClick,
+  showTitle
 }: TaskBarProps) {
   const isProject = type === "project";
   const customization = useDashboardStore((s) => s.customization);
-  const showTitle = useDashboardStore(selectShowTitle);
 
   const finalBarColor = isProject
     ? (customization.projectBarColor ?? projectBarColor)

@@ -4,7 +4,6 @@ import { Timeline } from "@/features/Timeline/Timeline";
 import { ScaleNavbar } from "./ScaleNavbar";
 import type {
   Task,
-  TimelineScale,
   GanttColor,
   TaskbarRadiusType,
   ColumnConfig,
@@ -21,7 +20,7 @@ interface GanttProps {
   tasks: Task[];
   displayOptions?: DisplayOptions;
   columns?: ColumnConfig[];
-  onTaskDoubleClick?: (task: Task) => void;
+
   styleOptions?: {
     rowHeight?: number;
     ganttList?: {
@@ -44,6 +43,8 @@ interface GanttProps {
       headerColor?: GanttColor;
     };
   };
+
+  onTaskDoubleClick?: () => void;
 }
 
 export function Gantt({
@@ -62,16 +63,11 @@ export function Gantt({
   const setGanttListHeaderColor = useDashboardStore(
     (s) => s.setGanttListHeaderColor,
   );
-  const setShowDependencies = useDashboardStore((s) => s.setShowDependencies);
-  const setShowDayLabels = useDashboardStore((s) => s.setShowDayLabels);
   const setTimeFormat = useDashboardStore((s) => s.setTimeFormat);
-  const setAvailableScales = useDashboardStore((s) => s.setAvailableScales);
-  const setTimelineTodayColor = useDashboardStore((s) => s.setTimelineTodayColor);
-  const setTimelineWeekendColor = useDashboardStore((s) => s.setTimelineWeekendColor);
-  const setTimelineHeaderColor = useDashboardStore((s) => s.setTimelineHeaderColor);
-  const setMilestoneBackgroundColor = useDashboardStore((s) => s.setMilestoneBackgroundColor);
+  const setMilestoneBackgroundColor = useDashboardStore(
+    (s) => s.setMilestoneBackgroundColor,
+  );
   const setMilestoneShape = useDashboardStore((s) => s.setMilestoneShape);
-  const setShowTitle = useDashboardStore((s) => s.setShowTitle);
 
   useEffect(() => {
     const expandableIds = tasks.map((t) => t.id);
@@ -95,23 +91,33 @@ export function Gantt({
       setGanttListHeaderColor(styleOptions.ganttList.headerColor);
     }
 
+    if (onTaskDoubleClick) {
+      setCustomization({
+        onTaskDoubleClick,
+      });
+    }
+
     setCustomization({
+      //taskbar
       taskBarColor: styleOptions?.taskBar?.barColor,
       taskBarProgressColor: styleOptions?.taskBar?.progressColor,
       taskBarRadius: styleOptions?.taskBar?.radius,
       projectBarColor: styleOptions?.taskBar?.projectBarColor,
-    });
+      showTitle: styleOptions?.taskBar?.showTitle,
 
-    // Wire timeline colors from styleOptions into the store
-    if (styleOptions?.timeline?.todayColor) {
-      setTimelineTodayColor(styleOptions.timeline.todayColor);
-    }
-    if (styleOptions?.timeline?.weekendColor) {
-      setTimelineWeekendColor(styleOptions.timeline.weekendColor);
-    }
-    if (styleOptions?.timeline?.headerColor) {
-      setTimelineHeaderColor(styleOptions.timeline.headerColor);
-    }
+      // timeline
+      timeline: {
+        headerColor: styleOptions?.timeline?.headerColor || "slate",
+        weekendColor: styleOptions?.timeline?.weekendColor || "slate",
+        todayColor: styleOptions?.timeline?.todayColor || "slate",
+        showDayLabels: displayOptions?.showDayLabels ?? true,
+      },
+
+      // dependency arrows
+      dependencyArrows: {
+        showDependencies: displayOptions?.showDependencies ?? true,
+      },
+    });
 
     // Wire milestone styles from styleOptions into the store
     if (styleOptions?.milestone?.backgroundColor) {
@@ -119,11 +125,6 @@ export function Gantt({
     }
     if (styleOptions?.milestone?.shape) {
       setMilestoneShape(styleOptions.milestone.shape);
-    }
-
-    // Wire taskBar.showTitle from styleOptions into the store
-    if (styleOptions?.taskBar?.showTitle !== undefined) {
-      setShowTitle(styleOptions.taskBar.showTitle);
     }
 
     // Wire columns config into store
@@ -144,27 +145,9 @@ export function Gantt({
       setVisibleColumns(defaultVisibleColumns);
     }
 
-    // Wire showDependencies
-    if (displayOptions?.showDependencies !== undefined) {
-      setShowDependencies(displayOptions.showDependencies);
-    }
-
-    // Wire showDayLabels
-    if (displayOptions?.showDayLabels !== undefined) {
-      setShowDayLabels(displayOptions.showDayLabels);
-    } else {
-      const currentScale = displayOptions?.scale || "week";
-      setShowDayLabels(currentScale !== "quarter" && currentScale !== "year");
-    }
-
     // Wire timeFormat
     if (displayOptions?.timeFormat) {
       setTimeFormat(displayOptions.timeFormat);
-    }
-
-    // Wire availableScales
-    if (displayOptions?.availableScales) {
-      setAvailableScales(displayOptions.availableScales);
     }
   }, [
     styleOptions,
@@ -176,17 +159,10 @@ export function Gantt({
     setRowHeight,
     setGanttListHeaderColor,
     setCustomization,
-    setTimelineTodayColor,
-    setTimelineWeekendColor,
-    setTimelineHeaderColor,
     setMilestoneBackgroundColor,
     setMilestoneShape,
-    setShowTitle,
     setVisibleColumns,
-    setShowDependencies,
-    setShowDayLabels,
     setTimeFormat,
-    setAvailableScales,
   ]);
 
   const tableRef = useRef<HTMLElement>(null);
@@ -253,8 +229,8 @@ export function Gantt({
           className="flex-shrink-0 h-full overflow-hidden border-r z-10 bg-card flex flex-col"
           style={{ width: leftPanelWidth }}
         >
-          <GanttTable 
-            containerRef={leftRef} 
+          <GanttTable
+            containerRef={leftRef}
             columns={columns}
             onTaskDoubleClick={onTaskDoubleClick}
           />
