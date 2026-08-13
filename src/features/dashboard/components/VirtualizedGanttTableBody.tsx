@@ -1,10 +1,14 @@
 import type { ColumnWidths } from "../constants";
-import { useDashboardStore, selectDashboardIsLoading } from "../store/useDashboardStore";
-import { useGanttController, ROW_HEIGHT } from "@/features/Timeline/useGanttController";
+import {
+  selectDashboardIsLoading,
+  selectExpandedIds,
+  selectPositionedTasks,
+  selectRowHeight,
+  useDashboardStore,
+} from "../store/useDashboardStore";
 import { GanttTableRow } from "./GanttTableRow";
 import { LoadingState } from "./LoadingState";
 import { EmptyState } from "./EmptyState";
-import { useEffect, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { ColumnConfig, Task } from "../types";
 
@@ -24,25 +28,15 @@ export function VirtualizedGanttTableBody({
   onTaskDoubleClick,
 }: VirtualizedGanttTableBodyProps) {
   const tasks = useDashboardStore((state) => state.tasks);
+  const expandedIds = useDashboardStore(selectExpandedIds);
   const isLoading = useDashboardStore(selectDashboardIsLoading);
-  const positionedTasks = useGanttController();
-
-  const [containerHeight, setContainerHeight] = useState(600);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) setContainerHeight(entry.contentRect.height);
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [containerRef]);
+  const positionedTasks = useDashboardStore(selectPositionedTasks);
+  const rowHeight = useDashboardStore(selectRowHeight);
 
   const virtualizer = useVirtualizer({
     count: positionedTasks.length,
     getScrollElement: () => containerRef.current,
-    estimateSize: () => parseInt(getComputedStyle(document.documentElement).getPropertyValue('--row-height') || '40', 10),
+    estimateSize: () => rowHeight,
     overscan: 10,
   });
 
@@ -56,7 +50,7 @@ export function VirtualizedGanttTableBody({
     <div
       ref={containerRef}
       className="flex-1 min-w-full bg-background overflow-y-auto overflow-x-hidden relative"
-      style={{ scrollBehavior: "auto", width: totalWidth, height: containerHeight }}
+      style={{ scrollBehavior: "auto", width: totalWidth }}
     >
       <div style={{ height: totalSize, position: "relative" }}>
         {virtualItems.map((virtualItem) => {
@@ -67,12 +61,12 @@ export function VirtualizedGanttTableBody({
               key={task.id}
               task={task}
               depth={task.depth}
-              isExpanded={!!useDashboardStore.getState().expandedIds[task.id]}
+              isExpanded={!!expandedIds[task.id]}
               hasChildren={tasks.some((t) => t.parentId === task.id)}
               widths={widths}
               columns={columns}
               onTaskDoubleClick={onTaskDoubleClick}
-              style={{ position: "absolute", top: virtualItem.start, left: 0, right: 0, height: ROW_HEIGHT }}
+              style={{ position: "absolute", top: virtualItem.start, left: 0, right: 0, height: rowHeight }}
             />
           );
         })}

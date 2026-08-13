@@ -1,6 +1,7 @@
 import type { Task, ColumnConfig } from "../types";
 import type { ColumnWidths } from "../constants";
 import { useDashboardStore, selectVisibleColumns } from "../store/useDashboardStore";
+import { useCallback, useMemo } from "react";
 import { TaskNameCell } from "./TaskNameCell";
 import { StartDateCell } from "./StartDateCell";
 import { EndDateCell } from "./EndDateCell";
@@ -33,23 +34,26 @@ export function GanttTableRow({
   const visibleColumns = useDashboardStore(selectVisibleColumns);
 
   // Create a map of column configs for quick lookup
-  const columnConfigMap = new Map<string, ColumnConfig>();
-  columns?.forEach(col => {
-    columnConfigMap.set(col.key, col);
-  });
+  const columnConfigMap = useMemo(() => {
+    const map = new Map<string, ColumnConfig>();
+    columns?.forEach(col => {
+      map.set(col.key, col);
+    });
+    return map;
+  }, [columns]);
 
-  const getColumnWidth = (colId: string): number => {
+  const getColumnWidth = useCallback((colId: string): number => {
     // First check if there's a custom width in the columns config
-    const colConfig = columnConfigMap.get(colId as any);
+    const colConfig = columnConfigMap.get(colId);
     if (colConfig?.width !== undefined) {
       return colConfig.width;
     }
     // Fall back to the widths prop
     return widths[colId] || 0;
-  };
+  }, [columnConfigMap, widths]);
 
-  const getColumnRenderer = (colId: string): React.ReactNode => {
-    const colConfig = columnConfigMap.get(colId as any);
+  const getColumnRenderer = useCallback((colId: string): React.ReactNode => {
+    const colConfig = columnConfigMap.get(colId);
 
     // If there's a custom render function, use it
     if (colConfig?.render) {
@@ -125,17 +129,26 @@ export function GanttTableRow({
       default:
         return null;
     }
-  };
+  }, [columnConfigMap, depth, getColumnWidth, hasChildren, isExpanded, task]);
 
-  const cells = visibleColumns
-    .map((colId) => getColumnRenderer(colId))
-    .filter(Boolean);
+  const cells = useMemo(
+    () =>
+      visibleColumns.flatMap((colId) => {
+        const cell = getColumnRenderer(colId);
+        return cell ? [cell] : [];
+      }),
+    [getColumnRenderer, visibleColumns],
+  );
+
+  const handleDoubleClick = useCallback(() => {
+    onTaskDoubleClick?.(task);
+  }, [onTaskDoubleClick, task]);
 
   return (
     <div
       className="flex border-b border-border hover:bg-muted/50 transition-colors text-sm items-center w-max min-w-full"
       style={{ ...style, height: 'var(--row-height)' }}
-      onDoubleClick={() => onTaskDoubleClick?.(task)}
+      onDoubleClick={handleDoubleClick}
     >
       {cells}
     </div>

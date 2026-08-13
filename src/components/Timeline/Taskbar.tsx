@@ -6,7 +6,13 @@ import type {
   GanttCustomization,
 } from "../../features/dashboard/types";
 import type { CSSProperties } from "react";
-import { useDashboardStore } from "@/features/dashboard";
+import {
+  selectProjectBarColor,
+  selectTaskBarColor,
+  selectTaskBarProgressColor,
+  selectTaskBarRadius,
+  useDashboardStore,
+} from "@/features/dashboard";
 
 interface TaskBarProps {
   left: number;
@@ -92,7 +98,6 @@ export function TaskBar({
   height,
   progress,
   title,
-  hasParentId = true,
   projectBarColor = "blue",
   assignee,
   type = "task",
@@ -103,19 +108,24 @@ export function TaskBar({
   showTitle
 }: TaskBarProps) {
   const isProject = type === "project";
-  const customization = useDashboardStore((s) => s.customization);
+  const customizedProjectBarColor = useDashboardStore(selectProjectBarColor);
+  const customizedTaskBarColor = useDashboardStore(selectTaskBarColor);
+  const customizedTaskBarProgressColor = useDashboardStore(
+    selectTaskBarProgressColor,
+  );
+  const customizedTaskBarRadius = useDashboardStore(selectTaskBarRadius);
 
   const finalBarColor = isProject
-    ? (customization.projectBarColor ?? projectBarColor)
-    : (customization.taskBarColor ?? barColor);
+    ? (customizedProjectBarColor ?? projectBarColor)
+    : (customizedTaskBarColor ?? barColor);
 
   const color = BAR_COLOR_STYLES[finalBarColor];
 
   const finalProgressColor =
-    customization.taskBarProgressColor ?? progressColor;
+    customizedTaskBarProgressColor ?? progressColor;
   const progressFill = BAR_COLOR_STYLES[finalProgressColor].progress;
 
-  const finalRadius = customization.taskBarRadius ?? radius;
+  const finalRadius = customizedTaskBarRadius ?? radius;
 
   const barStyle = {
     "--bar-left": `${left}px`,

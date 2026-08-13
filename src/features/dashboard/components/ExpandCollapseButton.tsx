@@ -1,4 +1,5 @@
 import { ChevronRight, ChevronDown } from 'lucide-react';
+import { useCallback } from 'react';
 import { useDashboardStore } from '../store/useDashboardStore';
 
 interface ExpandCollapseButtonProps {
@@ -9,6 +10,9 @@ interface ExpandCollapseButtonProps {
 
 export function ExpandCollapseButton({ taskId, isExpanded, hasChildren }: ExpandCollapseButtonProps) {
   const toggleExpand = useDashboardStore(state => state.toggleExpand);
+  const handleClick = useCallback(() => {
+    toggleExpand(taskId);
+  }, [taskId, toggleExpand]);
 
   if (!hasChildren) {
     // Leaf node placeholder to maintain text alignment
@@ -17,7 +21,7 @@ export function ExpandCollapseButton({ taskId, isExpanded, hasChildren }: Expand
 
   return (
     <button
-      onClick={() => toggleExpand(taskId)}
+      onClick={handleClick}
       className="w-5 h-5 flex items-center justify-center mr-1 rounded hover:bg-muted focus:outline-none transition-colors"
       aria-label={isExpanded ? 'Collapse' : 'Expand'}
     >

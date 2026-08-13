@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import { SCALE_CONFIGS } from "../../features/Timeline/ScaleConfig";
 import type { TimelineScale, GanttColor } from "../../features/dashboard/types";
 import { cn } from "@/lib/utils";
@@ -57,7 +57,7 @@ interface TimelineHeaderProps {
   headerColor?: GanttColor;
 }
 
-export function TimelineHeader({
+function TimelineHeaderComponent({
   startDate,
   endDate,
   scale,
@@ -212,3 +212,5 @@ export function TimelineHeader({
     </div>
   );
 }
+
+export const TimelineHeader = memo(TimelineHeaderComponent);
