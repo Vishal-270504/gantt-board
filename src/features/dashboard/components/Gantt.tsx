@@ -115,11 +115,15 @@ export function Gantt({
         showDependencies: displayOptions?.showDependencies,
       },
     });
-
-    // Wire milestone styles from styleOptions into the store
-    if (styleOptions?.milestone?.backgroundColor) {
-      setMilestoneBackgroundColor(styleOptions.milestone.backgroundColor);
+    if (onTaskDoubleClick) {
+      setCustomization({
+        onTaskDoubleClick
+      })
     }
+      if (styleOptions?.milestone?.backgroundColor) {
+        // Wire milestone styles from styleOptions into the store
+        setMilestoneBackgroundColor(styleOptions.milestone.backgroundColor);
+      }
     if (styleOptions?.milestone?.shape) {
       setMilestoneShape(styleOptions.milestone.shape);
     }

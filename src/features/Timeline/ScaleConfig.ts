@@ -11,7 +11,7 @@ export interface ScaleConfig {
   msPerUnit: number; // real-world duration one unit represents
   getUnits: (start: Date, end: Date) => Date[];
   getGroups: (start: Date, end: Date) => HeaderGroup[];
-  formatUnit: (date: Date) => string;
+  formatUnit: (date: Date, timeFormat?: boolean) => string;
 }
 
 const MS_PER_DAY = 86_400_000;
@@ -76,7 +76,12 @@ export const SCALE_CONFIGS: Record<TimelineScale, ScaleConfig> = {
           day: "numeric",
         }),
       ),
-    formatUnit: (d) => d.toLocaleTimeString(undefined, { hour: "numeric" }),
+    formatUnit: (d, timeFromatIsTwelve?: boolean) =>
+      d.toLocaleTimeString(undefined, {
+        hour: "numeric",
+        hour12:
+          timeFromatIsTwelve ?? false
+      }),
   },
 
   day: {
@@ -143,11 +148,15 @@ export function getOffset(
 
 export const SCALES_WITHOUT_WEEKDAY_TIER: TimelineScale[] = ["quarter", "year"];
 
-export function getHeaderHeight(showDayLabels: boolean, scale: TimelineScale): number {
+export function getHeaderHeight(
+  showDayLabels: boolean,
+  scale: TimelineScale,
+): number {
   const showTier3 =
     showDayLabels &&
     !SCALES_WITHOUT_WEEKDAY_TIER.includes(scale) &&
-    scale !== "week";
+    scale !== "week" &&
+    scale !== "hour";
   const totalTiers = showTier3 ? 3 : 2;
   const tierHeight = 24;
   return totalTiers * tierHeight;
@@ -161,4 +170,3 @@ export interface GridConfig {
   lines: GridLine[];
   unitWidth?: number;
 }
-

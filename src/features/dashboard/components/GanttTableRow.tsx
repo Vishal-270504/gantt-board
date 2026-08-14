@@ -147,7 +147,7 @@ export function GanttTableRow({
   return (
     <div
       className="flex border-b border-border hover:bg-muted/50 transition-colors text-sm items-center w-max min-w-full"
-      style={{ ...style, height: 'var(--row-height)' }}
+      style={style}
       onDoubleClick={handleDoubleClick}
     >
       {cells}

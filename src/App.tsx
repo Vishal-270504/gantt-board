@@ -9,7 +9,7 @@ export default function App() {
       <Gantt
         tasks={mockTasks}
         styleOptions={{
-          rowHeight: 40,
+          rowHeight: 50,
           taskBar: {
             barColor: "amber",
             projectBarColor: "amber",
@@ -29,8 +29,10 @@ export default function App() {
           scale: "day",
           showDependencies: true,
           showDayLabels: true,
+          timeFormat: "12-hour"
         }}
         onTaskDoubleClick={myFn}
+
       />
     </div>
   );

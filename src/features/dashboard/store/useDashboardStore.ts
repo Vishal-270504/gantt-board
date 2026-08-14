@@ -41,6 +41,7 @@ export const getTimelineRangeForTasks = (tasks: Task[]) => {
 
   const start = new Date(minTime - 7 * 24 * 60 * 60 * 1000);
   const end = new Date(maxTime + 14 * 24 * 60 * 60 * 1000);
+  start.setHours(0, 0, 0, 0);
 
   return { start, end };
 };
