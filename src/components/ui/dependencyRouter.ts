@@ -26,8 +26,9 @@ export interface DepConnector {
 // Horizontal/vertical remove-from-task clearance used to decide whether a
 // segment is inside a bar. Boundary lines (exact row edges) are intentionally
 // treated as free space so routes thread through the gutters between rows.
-const EDGE_WEIGHT_PENALTY = 24;
-const ESCAPE_MARGIN = 80;
+const EDGE_WEIGHT_PENALTY = 20;
+const ESCAPE_MARGIN = 120;
+const LANE_CENTER_PENALTY = 30;
 
 function minMax(values: number[]): [number, number] {
   let lo = Infinity;
@@ -55,6 +56,32 @@ function verticallyBlocked(y1: number, y2: number, x: number, rects: DepRect[]):
     if (x > r.x && x < r.x + r.w && y1 < r.y + r.h && y2 > r.y) return true;
   }
   return false;
+}
+
+// Every task-bar x boundary (left or right edge). Vertical connector segments
+// are penalised when they run along one of these so routes prefer to travel
+// down the middle of the free lane between task bars.
+function boundarySet(rects: DepRect[]): Set<number> {
+  const s = new Set<number>();
+  for (const r of rects) {
+    s.add(r.x);
+    s.add(r.x + r.w);
+  }
+  return s;
+}
+
+// Insert the midpoint of each gap between two adjacent task-bar boundaries so
+// A* has a column in the center of the free lane to route vertical segments.
+function withLaneCenters(vals: number[], boundaries: Set<number>): number[] {
+  const out: number[] = [];
+  for (let i = 0; i < vals.length - 1; i += 1) {
+    const a = vals[i];
+    const b = vals[i + 1];
+    out.push(a);
+    if (boundaries.has(a) && boundaries.has(b)) out.push((a + b) / 2);
+  }
+  out.push(vals[vals.length - 1]);
+  return out;
 }
 
 function segmentKey(idA: number, idB: number): string {
@@ -101,7 +128,8 @@ export function routeDependencies(
   xsRaw.push(minXi - ESCAPE_MARGIN, maxXi + ESCAPE_MARGIN);
   ysRaw.push(minYi - ESCAPE_MARGIN, maxYi + ESCAPE_MARGIN);
 
-  const xs = uniqueSorted(xsRaw);
+  const boundaries = boundarySet(rects);
+  const xs = withLaneCenters(uniqueSorted(xsRaw), boundaries);
   const ys = uniqueSorted(ysRaw);
   const xCount = xs.length;
   const yCount = ys.length;
@@ -179,11 +207,12 @@ export function routeDependencies(
           blocked: horizontallyBlocked(cxCoord, x2, cyCoord, rects),
         });
       }
+      const lanePenalty = boundaries.has(cxCoord) ? LANE_CENTER_PENALTY : 0;
       if (cy > 0) {
         const y1 = ys[cy - 1];
         neighbors.push({
           id: nodeId(cx, cy - 1),
-          weight: Math.abs(cyCoord - y1),
+          weight: Math.abs(cyCoord - y1) + lanePenalty,
           blocked: verticallyBlocked(y1, cyCoord, cxCoord, rects),
         });
       }
@@ -191,7 +220,7 @@ export function routeDependencies(
         const y2 = ys[cy + 1];
         neighbors.push({
           id: nodeId(cx, cy + 1),
-          weight: Math.abs(y2 - cyCoord),
+          weight: Math.abs(y2 - cyCoord) + lanePenalty,
           blocked: verticallyBlocked(cyCoord, y2, cxCoord, rects),
         });
       }

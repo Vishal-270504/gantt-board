@@ -6,9 +6,10 @@ interface MilestoneMarkerProps {
   left: number;
   top: number;
   title: string;
+  rowHeight?: number;
 }
 
-export function MilestoneMarker({ left, top, title }: MilestoneMarkerProps) {
+export function MilestoneMarker({ left, top, title, rowHeight = 14 }: MilestoneMarkerProps) {
   const milestoneBackgroundColor = useDashboardStore(selectMilestoneBackgroundColor);
   const milestoneShape = useDashboardStore(selectMilestoneShape);
 
@@ -46,10 +47,11 @@ export function MilestoneMarker({ left, top, title }: MilestoneMarkerProps) {
   };
 
   const getMarkerStyle = (): CSSProperties => {
+    const topOffset = (rowHeight - 14) / 2;
     const base: CSSProperties = {
       position: 'absolute',
       left: `${left}px`,
-      top: `${top}px`,
+      top: `${top + topOffset}px`,
     };
 
     if (milestoneShape === 'triangle') {

@@ -126,6 +126,7 @@ export function Timeline({ containerRef }: TimelineProps) {
                 left={t.left}
                 top={t.top}
                 title={t.title}
+                rowHeight={rowHeight}
               />
             ) : (
               <TaskBar

@@ -7,7 +7,9 @@ import {
   type DepPoint,
 } from "../ui/dependencyRouter";
 
-const ARROW_COLOR = "var(--arrow-color, #6366f1)";
+const ARROW_COLOR = "#6b7280";
+const ARROW_LEN = 10;
+const ARROW_GAP = 4;
 const PADDING = 16;
 
 interface DependencyArrowsProps {
@@ -62,7 +64,7 @@ export function DependencyArrows({ tasks, rowHeight }: DependencyArrowsProps) {
           y: pred.top + rowHeight / 2,
         },
         to: {
-          x: successor.left,
+          x: successor.left - ARROW_LEN - ARROW_GAP,
           y: successor.top + rowHeight / 2,
         },
       });
@@ -90,13 +92,18 @@ export function DependencyArrows({ tasks, rowHeight }: DependencyArrowsProps) {
       <defs>
         <marker
           id="arrowhead"
-          markerWidth="6"
-          markerHeight="6"
-          refX="5"
-          refY="3"
-          orient="auto"
+          markerWidth="10"
+          markerHeight="10"
+          refX="0"
+          refY="5"
+          orient="0"
         >
-          <path d="M0,0 L0,6 L6,3 z" fill={ARROW_COLOR} opacity="0.85" />
+          <path
+            d="M0,0 L0,10 L10,5 Z"
+            fill={ARROW_COLOR}
+            stroke={ARROW_COLOR}
+            strokeWidth="1.5"
+          />
         </marker>
       </defs>
       {routes.map((points, i) => (
