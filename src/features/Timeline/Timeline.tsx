@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   useDashboardStore,
@@ -22,6 +22,7 @@ import { MilestoneMarker } from "../../components/Timeline/MilestoneMarker.tsx";
 import { DependencyArrows } from "../../components/Timeline/DependencyArrows.tsx";
 import { getOffset } from "./ScaleConfig";
 import type { GanttColor } from "../dashboard/index.ts";
+import type { Task } from "../dashboard/types";
 
 interface TimelineProps {
   containerRef: React.RefObject<HTMLDivElement | null>;
@@ -73,9 +74,16 @@ export function Timeline({ containerRef }: TimelineProps) {
     };
   });
 
-  const handleTaskDoubleClick = useCallback(() => {
-    onTaskDoubleClick?.();
-  }, [onTaskDoubleClick]);
+  const handleTaskDoubleClick = useCallback(
+    (task: Task) => {
+      onTaskDoubleClick?.(task);
+    },
+    [onTaskDoubleClick],
+  );
+
+  useEffect(() => {
+    virtualizer.measure();
+  }, [rowHeight, virtualizer]);
 
   return (
     <div ref={containerRef} className="h-full overflow-auto relative">
@@ -93,17 +101,10 @@ export function Timeline({ containerRef }: TimelineProps) {
             startDate={timelineStart}
             endDate={timelineEnd}
             scale={scale}
+            rowHeight={rowHeight}
+            height={totalHeight}
             scrollContainerRef={containerRef}
           />
-
-          {/* Horizontal row separator lines — driven by row virtualizer directly */}
-          {virtualItems.map((vi) => (
-            <div
-              key={vi.index}
-              className="absolute left-0 right-0 border-b pointer-events-none"
-              style={{ top: vi.start + rowHeight - 1 }}
-            />
-          ))}
 
           {/* Today marker */}
           <div
@@ -138,6 +139,7 @@ export function Timeline({ containerRef }: TimelineProps) {
                 height={rowHeight - 8}
                 progress={t.progress}
                 title={t.title}
+                task={t}
                 hasParentId={t.parentId === null}
                 assignee={t.assignee}
                 showTitle={showTitle}

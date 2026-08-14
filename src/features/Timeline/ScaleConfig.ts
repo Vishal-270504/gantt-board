@@ -147,7 +147,8 @@ export function getHeaderHeight(showDayLabels: boolean, scale: TimelineScale): n
   const showTier3 =
     showDayLabels &&
     !SCALES_WITHOUT_WEEKDAY_TIER.includes(scale) &&
-    scale !== "week";
+    scale !== "week" &&
+    scale !== "hour";
   const totalTiers = showTier3 ? 3 : 2;
   const tierHeight = 24;
   return totalTiers * tierHeight;

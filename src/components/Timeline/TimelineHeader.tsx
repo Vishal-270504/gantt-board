@@ -64,7 +64,7 @@ function TimelineHeaderComponent({
   headerColor,
 }: TimelineHeaderProps) {
   const config = SCALE_CONFIGS[scale];
-
+  
   const units = useMemo(
     () => config.getUnits(startDate, endDate),
     [config, startDate, endDate],
@@ -78,7 +78,8 @@ function TimelineHeaderComponent({
   const showTier3 =
     showDayLabels &&
     !SCALES_WITHOUT_WEEKDAY_TIER.includes(scale) &&
-    scale !== "week";
+    scale !== "week" &&
+    scale !== "hour";
 
   const totalHeight = getHeaderHeight(showDayLabels, scale);
 
@@ -165,44 +166,25 @@ function TimelineHeaderComponent({
       {/* Tier 3: weekday labels — per unit for day/month, per group for hour */}
       {showTier3 && (
         <div className="flex h-6 border-t">
-          {scale === "hour"
-            ? groups.map((g, i) => {
-                const weekday = WEEKDAY_SHORT[g.start.getDay()];
-                const groupStyle = {
-                  "--group-w": `${g.widthInUnits * config.unitWidth}px`,
-                } as CSSProperties;
-                return (
-                  <div
-                    key={i}
-                    className={cn(
-                      "flex items-center justify-center border-r text-[11px] text-muted-foreground w-[var(--group-w)] h-full truncate",
-                      weekendCn(g.start),
-                    )}
-                    style={groupStyle}
-                  >
-                    {weekday}
-                  </div>
-                );
-              })
-            : units.map((u, i) => {
-                const weekday = WEEKDAY_SHORT[u.getDay()];
-                const unitStyle = {
-                  "--unit-w": `${config.unitWidth}px`,
-                } as CSSProperties;
-                return (
-                  <div
-                    key={i}
-                    className={cn(
-                      "flex items-center justify-center border-r text-[11px] text-muted-foreground w-[var(--unit-w)] h-full",
-                      isToday(u) && "bg-primary/10 font-semibold text-primary",
-                      weekendCn(u),
-                    )}
-                    style={unitStyle}
-                  >
-                    {weekday}
-                  </div>
-                );
-              })}
+          {units.map((u, i) => {
+            const weekday = WEEKDAY_SHORT[u.getDay()];
+            const unitStyle = {
+              "--unit-w": `${config.unitWidth}px`,
+            } as CSSProperties;
+            return (
+              <div
+                key={i}
+                className={cn(
+                  "flex items-center justify-center border-r text-[11px] text-muted-foreground w-[var(--unit-w)] h-full",
+                  isToday(u) && "bg-primary/10 font-semibold text-primary",
+                  weekendCn(u),
+                )}
+                style={unitStyle}
+              >
+                {weekday}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

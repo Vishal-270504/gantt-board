@@ -1,72 +1,167 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Gantt } from '../features/dashboard/components/Gantt';
-import { mockTasks } from "../features/dashboard/mockData";
-import type { Task, TimelineScale } from "../features/dashboard/types";
+import type { Meta, StoryObj } from "@storybook/react";
+import { Gantt } from "../features/dashboard/components/Gantt";
+import type { Task } from "../features/dashboard/index";
 
-function GanttWrapper({ scale, ...rest }: { scale: TimelineScale } & React.ComponentProps<typeof Gantt>) {
-  return <Gantt {...rest} displayOptions={{ scale }} />;
-}
+const today = new Date();
+const d = (offsetDays: number, hour = 0): string => {
+  const dt = new Date(today);
+  dt.setDate(dt.getDate() + offsetDays);
+  dt.setHours(hour, 0, 0, 0);
+  return dt.toISOString();
+};
 
-const meta: Meta<typeof GanttWrapper> = {
-  title: 'Dashboard/Gantt',
-  component: GanttWrapper,
-  tags: ['autodocs'],
-  parameters: {
-    layout: 'fullscreen',
+const tasks: Task[] = [
+  {
+    id: "proj-1",
+    title: "Project Alpha",
+    type: "project",
+    startDate: d(0),
+    endDate: d(30),
+    progress: 40,
+    parentId: null,
+    predecessors: [],
+    assignee: "Alice",
   },
-  argTypes: {
-    scale: {
-      control: 'select',
-      options: ['hour', 'day', 'week', 'month', 'quarter', 'year'],
-      description: 'Timeline zoom level',
-    },
-    onTaskDoubleClick: {
-      action: 'taskDoubleClicked',
-      description: 'Callback when a task is double-clicked',
-    },
+  {
+    id: "task-1",
+    title: "Discovery",
+    type: "task",
+    startDate: d(0),
+    endDate: d(7),
+    progress: 100,
+    parentId: "proj-1",
+    predecessors: [],
+    assignee: "Alice",
   },
+  {
+    id: "task-2",
+    title: "Design",
+    type: "task",
+    startDate: d(7),
+    endDate: d(14),
+    progress: 60,
+    parentId: "proj-1",
+    predecessors: ["task-1"],
+    assignee: "Bob",
+  },
+  {
+    id: "task-3",
+    title: "Development",
+    type: "task",
+    startDate: d(14),
+    endDate: d(24),
+    progress: 20,
+    parentId: "proj-1",
+    predecessors: ["task-2"],
+    assignee: "Carol",
+  },
+  {
+    id: "ms-1",
+    title: "Launch",
+    type: "milestone",
+    startDate: d(24),
+    endDate: d(24),
+    progress: 0,
+    parentId: "proj-1",
+    predecessors: ["task-3"],
+    assignee: "",
+  },
+  {
+    id: "task-4",
+    title: "Post-launch Support",
+    type: "task",
+    startDate: d(24),
+    endDate: d(30),
+    progress: 0,
+    parentId: "proj-1",
+    predecessors: ["ms-1"],
+    assignee: "Dave",
+  },
+];
+
+const meta: Meta<typeof Gantt> = {
+  title: "Components/Gantt",
+  component: Gantt,
+  parameters: { layout: "fullscreen" },
+  tags: ["autodocs"],
 };
 
 export default meta;
-type Story = StoryObj<typeof GanttWrapper>;
+type Story = StoryObj<typeof Gantt>;
 
-const defaultArgs = {
-  tasks: mockTasks as Task[],
-  scale: 'week' as TimelineScale,
-};
-
-export const Default: Story = {
-  args: { ...defaultArgs },
-};
-
-export const WithDoubleClickHandler: Story = {
+export const QA: Story = {
   args: {
-    ...defaultArgs,
-    onTaskDoubleClick: (task: Task) => {
-      alert(`Task double-clicked: ${task.title}`);
+    tasks,
+
+    displayOptions: {
+      "scale": "week",
+      "availableScales": ["hour", "day", "week", "month", "quarter", "year"],
+      "showDependencies": true,
+      "showDayLabels": true,
+      "timeFormat": "12-hour"
     },
-  },
-};
 
-export const CustomStyleOptions: Story = {
-  args: {
-    ...defaultArgs,
+    columns: [{
+      "key": "title",
+      "visible": true,
+      "width": 260
+    }, {
+      "key": "startDate",
+      "visible": true,
+      "width": 100,
+      "dateFormat": "DD MMM YYYY"
+    }, {
+      "key": "endDate",
+      "visible": true,
+      "width": 160,
+      "dateFormat": "DD MMM YYYY"
+    }, {
+      "key": "duration",
+      "visible": true,
+      "width": 140
+    }, {
+      "key": "progress",
+      "visible": true,
+      "width": 90
+    }, {
+      "key": "predecessors",
+      "visible": true,
+      "width": 130
+    }, {
+      "key": "assignee",
+      "visible": true,
+      "width": 140
+    }],
+
     styleOptions: {
-      rowHeight: 50,
-      taskBar: {
-        barColor: 'emerald' as const,
-        progressColor: 'blue' as const,
-        radius: 'full' as const,
+      "rowHeight": 60,
+
+      "ganttList": {
+        "headerColor": "slate"
       },
-      milestone: {
-        backgroundColor: 'amber' as const,
-        shape: 'circle' as const,
+
+      "taskBar": {
+        "barColor": "blue",
+        "progressColor": "emerald",
+        "projectBarColor": "indigo",
+        "radius": "md",
+        "showTitle": true
       },
-      timeline: {
-        todayColor: 'rose' as const,
-        weekendColor: 'slate' as const,
-        headerColor: 'blue' as const,
+
+      "milestone": {
+        "backgroundColor": "amber",
+        "shape": "diamond"
       },
+
+      "timeline": {
+        "todayColor": "rose",
+        "weekendColor": "slate",
+        "headerColor": "slate"
+      }
+    },
+
+    onTaskDoubleClick: (task: Task) => {
+      console.log("double-clicked:", task);
     },
   },
-};  
+};

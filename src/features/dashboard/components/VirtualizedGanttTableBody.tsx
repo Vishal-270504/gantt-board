@@ -11,6 +11,7 @@ import { LoadingState } from "./LoadingState";
 import { EmptyState } from "./EmptyState";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { ColumnConfig, Task } from "../types";
+import { useEffect, useState } from "react";
 
 interface VirtualizedGanttTableBodyProps {
   widths: ColumnWidths;
@@ -43,6 +44,10 @@ export function VirtualizedGanttTableBody({
   const virtualItems = virtualizer.getVirtualItems();
   const totalSize = virtualizer.getTotalSize();
 
+  useEffect(() => {
+    virtualizer.measure();
+  }, [rowHeight, virtualizer]);
+
   if (isLoading) return <LoadingState />;
   if (tasks.length === 0) return <EmptyState />;
 
@@ -66,7 +71,13 @@ export function VirtualizedGanttTableBody({
               widths={widths}
               columns={columns}
               onTaskDoubleClick={onTaskDoubleClick}
-              style={{ position: "absolute", top: virtualItem.start, left: 0, right: 0, height: rowHeight }}
+              style={{
+                position: "absolute",
+                top: virtualItem.start,
+                left: 0,
+                right: 0,
+                height: rowHeight,
+              }}
             />
           );
         })}

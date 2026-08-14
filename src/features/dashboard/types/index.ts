@@ -105,7 +105,7 @@ export interface GanttCustomization {
   taskBarColor: GanttColor;
   showTitle: boolean;
   
-  onTaskDoubleClick?: () => void;
+  onTaskDoubleClick?: (task: Task) => void;
 
   timeline?: {
     weekendColor: GanttColor;

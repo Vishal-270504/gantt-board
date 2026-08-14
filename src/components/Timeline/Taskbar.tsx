@@ -1,4 +1,4 @@
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {  Tooltip,  TooltipTrigger,  TooltipContent } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type {
   Task,
@@ -6,7 +6,13 @@ import type {
   GanttCustomization,
 } from "../../features/dashboard/types";
 import type { CSSProperties } from "react";
-import { useDashboardStore } from "@/features/dashboard/store/useDashboardStore";
+import {
+  selectProjectBarColor,
+  selectTaskBarColor,
+  selectTaskBarProgressColor,
+  selectTaskBarRadius,
+  useDashboardStore,
+} from "@/features/dashboard";
 
 interface TaskBarProps {
   left: number;
@@ -22,26 +28,9 @@ interface TaskBarProps {
   barColor?: GanttColor;
   progressColor?: GanttColor;
   radius?: GanttCustomization["taskBarRadius"];
-  onDoubleClick?: () => void;
-  showTitle?: GanttCustomization["showTitle"];
-}
-
-interface TaskBarProps {
-  left: number;
-  width: number;
-  top: number;
-  height: number;
-  progress: number;
-  title: string;
-  hasParentId?: boolean;
-  projectBarColor?: GanttColor;
-  assignee?: string;
-  type?: Task["type"];
-  barColor?: GanttColor;
-  progressColor?: GanttColor;
-  radius?: GanttCustomization["taskBarRadius"];
-  onDoubleClick?: () => void;
-  showTitle?: GanttCustomization["showTitle"];
+  task: Task;
+  onDoubleClick?: (task: Task) => void;
+  showTitle?: GanttCustomization["showTitle"]
 }
 
 // Tailwind classes are written out explicitly so the JIT compiler can detect them.
@@ -110,80 +99,70 @@ export function TaskBar({
   height,
   progress,
   title,
-  hasParentId: _hasParentId = true,
   projectBarColor = "blue",
   assignee,
   type = "task",
   barColor = "blue",
   progressColor = "indigo",
   radius = "md",
+  task,
   onDoubleClick,
-  showTitle,
+  showTitle
 }: TaskBarProps) {
   const isProject = type === "project";
-  const customization = useDashboardStore((s) => s.customization) || {
-  projectBarColor: "blue",
-  taskBarColor: "blue",
-  taskBarProgressColor: "indigo",
-  taskBarRadius: "md",
-  showTitle: true,
-};
-
-  const safeLeft = Number.isFinite(left) ? left : 0;
-  const safeTop = Number.isFinite(top) ? top : 0;
-  const safeHeight = Number.isFinite(height) && height > 0 ? height : 18;
-  const safeWidth = Number.isFinite(width) && width > 0 ? width : 0;
-  const safeProgress = Number.isFinite(progress) ? Math.min(100, Math.max(0, progress)) : 0;
-  const safeTitle = title ?? "";
+  const customizedProjectBarColor = useDashboardStore(selectProjectBarColor);
+  const customizedTaskBarColor = useDashboardStore(selectTaskBarColor);
+  const customizedTaskBarProgressColor = useDashboardStore(
+    selectTaskBarProgressColor,
+  );
+  const customizedTaskBarRadius = useDashboardStore(selectTaskBarRadius);
 
   const finalBarColor = isProject
-    ? (customization.projectBarColor ?? projectBarColor ?? "blue")
-    : (customization.taskBarColor ?? barColor ?? "blue");
+    ? (customizedProjectBarColor ?? projectBarColor)
+    : (customizedTaskBarColor ?? barColor);
 
-  const color = BAR_COLOR_STYLES[finalBarColor] ?? BAR_COLOR_STYLES.blue;
+  const color = BAR_COLOR_STYLES[finalBarColor];
 
   const finalProgressColor =
-    customization.taskBarProgressColor ?? progressColor ?? "indigo";
-  const progressFill = (BAR_COLOR_STYLES[finalProgressColor] ?? BAR_COLOR_STYLES.indigo).progress;
+    customizedTaskBarProgressColor ?? progressColor;
+  const progressFill = BAR_COLOR_STYLES[finalProgressColor].progress;
 
-  const finalRadius = customization.taskBarRadius ?? radius ?? "md";
+  const finalRadius = customizedTaskBarRadius ?? radius;
 
-  const barStyle: CSSProperties = {
-    position: "absolute",
-    left: `${safeLeft}px`,
-    top: `${safeTop}px`,
-    height: `${safeHeight}px`,
-  };
+  const barStyle = {
+    "--bar-left": `${left}px`,
+    "--bar-w": `${width}px`,
+    "--bar-top": `${top}px`,
+    "--bar-h": `${height}px`,
+  } as CSSProperties;
 
-  const progressStyle: CSSProperties = {
-    width: `${safeProgress}%`,
-  };
 
-  const estimatedTextWidth = safeTitle.length * CHAR_WIDTH + BAR_PADDING;
-  const titleFits = safeWidth > 0 && estimatedTextWidth <= safeWidth;
+  const progressStyle = { "--progress-w": `${progress}%` } as CSSProperties;
+
+  // Determine if the title fits inside the bar
+  const estimatedTextWidth = title.length * CHAR_WIDTH + BAR_PADDING;
+  const titleFits = estimatedTextWidth <= width;
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <div
-          className="absolute flex items-center mt-1"
-          style={{
-            ...barStyle,
-            width: titleFits ? `${safeWidth}px` : "auto",
-          }}
-          onDoubleClick={onDoubleClick}
+          className="absolute left-[var(--bar-left)] top-[var(--bar-top)] h-[var(--bar-h)] flex items-center mt-1"
+          style={{ ...barStyle, width: titleFits ? `${width}px` : undefined }}
+          onDoubleClick={() => onDoubleClick?.(task)}
         >
+          {/* The actual coloured bar */}
           <div
             className={cn(
               "relative overflow-hidden border flex-shrink-0",
               RADIUS_STYLES[finalRadius],
               isProject ? color.solid : color.bar,
             )}
-            style={{ width: `${safeWidth}px`, height: "100%" }}
+            style={{ width: `${width - 15}px`, height: "100%" }}
           >
             {!isProject && (
               <div
-                className={cn("h-full", progressFill)}
+                className={cn("h-full w-[var(--progress-w)]", progressFill)}
                 style={progressStyle}
               />
             )}
@@ -194,25 +173,26 @@ export function TaskBar({
                   isProject ? "text-white font-medium" : "text-foreground",
                 )}
               >
-                {safeTitle}
+                {title}
               </span>
             )}
           </div>
 
-          {showTitle && !titleFits && safeTitle && (
+          {/* Title shown beside the bar when it doesn't fit inside */}
+          {showTitle && !titleFits && (
             <span
               className={cn(
                 "ml-2 text-xs whitespace-nowrap font-medium",
                 isProject ? "text-foreground font-semibold" : "text-foreground",
               )}
             >
-              {safeTitle}
+              {title}
             </span>
           )}
         </div>
       </TooltipTrigger>
-      <TooltipContent aria-label={safeTitle || "Task bar details"}>
-        {safeTitle || "Task"} — {safeProgress}%{assignee ? ` · ${assignee}` : ""}
+      <TooltipContent>
+        {title} — {progress}%{assignee ? ` · ${assignee}` : ""}
       </TooltipContent>
     </Tooltip>
   );

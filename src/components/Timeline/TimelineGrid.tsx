@@ -8,6 +8,8 @@ interface TimelineGridProps {
   startDate: Date;
   endDate: Date;
   scale: TimelineScale;
+  rowHeight: number;
+  height: number;
   scrollContainerRef: React.RefObject<HTMLDivElement | null>;
 }
 
@@ -15,6 +17,8 @@ export const TimelineGrid = React.memo(function TimelineGrid({
   startDate,
   endDate,
   scale,
+  rowHeight,
+  height,
   scrollContainerRef,
 }: TimelineGridProps) {
   const { unitCount, unitWidth } = useMemo(() => {
@@ -36,6 +40,7 @@ export const TimelineGrid = React.memo(function TimelineGrid({
   });
 
   const virtualColumns = columnVirtualizer.getVirtualItems();
+  const rowCount = Math.ceil(height / rowHeight);
 
   return (
     <div className="absolute inset-0 pointer-events-none">
@@ -46,6 +51,13 @@ export const TimelineGrid = React.memo(function TimelineGrid({
           style={{
             left: vc.index * unitWidth,
           }}
+        />
+      ))}
+      {Array.from({ length: rowCount }).map((_, index) => (
+        <div
+          key={index}
+          className="absolute left-0 right-0 border-b"
+          style={{ top: (index + 1) * rowHeight - 1 }}
         />
       ))}
     </div>
