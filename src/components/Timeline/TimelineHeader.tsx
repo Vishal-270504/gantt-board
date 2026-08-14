@@ -1,6 +1,6 @@
 import { memo, useMemo } from "react";
 import { SCALE_CONFIGS, SCALES_WITHOUT_WEEKDAY_TIER, getHeaderHeight } from "../../features/Timeline/ScaleConfig";
-import type { TimelineScale, GanttColor } from "../../features/dashboard/types";
+import type { TimelineScale, GanttColor, TimeFormat } from "../../features/dashboard/types";
 import { cn } from "@/lib/utils";
 import type { CSSProperties } from "react";
 
@@ -53,6 +53,7 @@ interface TimelineHeaderProps {
   showDayLabels?: boolean;
   weekendColor?: GanttColor;
   headerColor?: GanttColor;
+  timeformat?: TimeFormat;
 }
 
 function TimelineHeaderComponent({
@@ -62,6 +63,7 @@ function TimelineHeaderComponent({
   showDayLabels = false,
   weekendColor,
   headerColor,
+  timeformat
 }: TimelineHeaderProps) {
   const config = SCALE_CONFIGS[scale];
   
@@ -98,6 +100,7 @@ function TimelineHeaderComponent({
       ? cn(weekendBg, weekendText)
       : undefined;
 
+      // console.log(groups)
   return (
     <div
       className={cn(
@@ -157,7 +160,8 @@ function TimelineHeaderComponent({
               )}
               style={unitStyle}
             >
-              {config.formatUnit(u)}
+              {timeformat && config.formatUnit(u, timeformat === '12-hour')}
+              {!timeformat && config.formatUnit(u)}
             </div>
           );
         })}

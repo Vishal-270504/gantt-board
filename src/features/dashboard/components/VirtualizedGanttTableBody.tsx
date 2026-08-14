@@ -11,7 +11,7 @@ import { LoadingState } from "./LoadingState";
 import { EmptyState } from "./EmptyState";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { ColumnConfig, Task } from "../types";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 interface VirtualizedGanttTableBodyProps {
   widths: ColumnWidths;

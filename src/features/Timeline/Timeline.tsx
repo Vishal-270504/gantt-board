@@ -14,6 +14,7 @@ import {
   selectShowDependencyArrows,
   selectTaskDoubleClick,
   selectShowTitle,
+  selectTimeFormat,
 } from "../dashboard/store/useDashboardStore";
 import { TimelineHeader } from "../../components/Timeline/TimelineHeader.tsx";
 import { TimelineGrid } from "../../components/Timeline/TimelineGrid.tsx";
@@ -52,6 +53,7 @@ export function Timeline({ containerRef }: TimelineProps) {
   const showDependencies = useDashboardStore(selectShowDependencyArrows);
   const onTaskDoubleClick = useDashboardStore(selectTaskDoubleClick);
   const showTitle = useDashboardStore(selectShowTitle);
+  const timeFormat = useDashboardStore(selectTimeFormat);
 
   const todayColorClass = GANTT_COLOR_CLASSES[timelineTodayColor];
 
@@ -95,6 +97,7 @@ export function Timeline({ containerRef }: TimelineProps) {
           showDayLabels={showDayLabels}
           headerColor={timelineHeaderColor}
           weekendColor={timelineWeekendColor}
+          timeformat={timeFormat}
         />
         <div style={{ height: totalHeight, position: "relative" }}>
           <TimelineGrid
