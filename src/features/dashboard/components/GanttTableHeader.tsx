@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { GANTT_COLUMNS, type ColumnWidths, COLOR_TO_BG_CLASS } from '../constants';
-import { useDashboardStore, selectVisibleColumns, selectGanttListHeaderColor } from '../store/useDashboardStore';
+import { useDashboardStore, selectVisibleColumns, selectGanttListHeaderColor, selectScale, selectTimelineShowDayLabels } from '../store/useDashboardStore';
+import { getHeaderHeight } from '../../Timeline/ScaleConfig';
 import clsx from 'clsx';
 
 interface GanttTableHeaderProps {
@@ -13,6 +14,9 @@ const MIN_COLUMN_WIDTH = 80;
 export function GanttTableHeader({ widths, onColumnResize }: GanttTableHeaderProps) {
   const visibleColumns = useDashboardStore(selectVisibleColumns);
   const headerColor = useDashboardStore(selectGanttListHeaderColor);
+  const scale = useDashboardStore(selectScale);
+  const showDayLabels = useDashboardStore(selectTimelineShowDayLabels);
+  const headerHeight = getHeaderHeight(showDayLabels, scale);
   const [resizingColumn, setResizingColumn] = useState<string | null>(null);
   const dragState = useRef<{
     columnId: string;
@@ -63,7 +67,7 @@ export function GanttTableHeader({ widths, onColumnResize }: GanttTableHeaderPro
   const headerBgClass = headerColor ? COLOR_TO_BG_CLASS[headerColor] : 'bg-muted/90';
 
   return (
-    <div className={clsx("sticky top-0 z-10 flex backdrop-blur-sm border-b border-border text-sm font-medium text-muted-foreground w-max min-w-full h-12", headerBgClass)}>
+    <div className={clsx("sticky top-0 z-10 flex backdrop-blur-sm border-b border-border text-sm font-medium text-muted-foreground w-max min-w-full", headerBgClass)} style={{ height: `${headerHeight}px` }}>
       {visibleCols.map((col) => (
         <div
           key={col.id}

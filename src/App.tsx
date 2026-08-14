@@ -27,8 +27,8 @@ export default function App() {
         }}
         displayOptions={{
           scale: "day",
-          showDependencies: false,
-          showDayLabels: false,
+          showDependencies: true,
+          showDayLabels: true,
         }}
         onTaskDoubleClick={myFn}
       />

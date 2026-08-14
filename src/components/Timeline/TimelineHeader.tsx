@@ -1,12 +1,10 @@
 import { memo, useMemo } from "react";
-import { SCALE_CONFIGS } from "../../features/Timeline/ScaleConfig";
+import { SCALE_CONFIGS, SCALES_WITHOUT_WEEKDAY_TIER, getHeaderHeight } from "../../features/Timeline/ScaleConfig";
 import type { TimelineScale, GanttColor } from "../../features/dashboard/types";
 import { cn } from "@/lib/utils";
 import type { CSSProperties } from "react";
 
 const WEEKDAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-const SCALES_WITHOUT_WEEKDAY_TIER: TimelineScale[] = ["quarter", "year"];
 
 // Tailwind purges classes it can't statically detect, so we map full class
 // strings rather than constructing them dynamically (e.g. `bg-${color}-100`).
@@ -82,9 +80,7 @@ function TimelineHeaderComponent({
     !SCALES_WITHOUT_WEEKDAY_TIER.includes(scale) &&
     scale !== "week";
 
-  const totalTiers = showTier3 ? 3 : 2;
-  const tierHeight = 24;
-  const totalHeight = totalTiers * tierHeight;
+  const totalHeight = getHeaderHeight(showDayLabels, scale);
 
   const headerStyle = {
     "--header-w": `${units.length * config.unitWidth}px`,

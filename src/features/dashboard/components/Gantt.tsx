@@ -16,11 +16,7 @@ import type {
   DisplayOptions,
   MilestoneShape,
 } from "../types";
-import {
-  selectShowDayLabels,
-  selectTimelineWeekendColor,
-  useDashboardStore,
-} from "../store/useDashboardStore";
+import { useDashboardStore } from "../store/useDashboardStore";
 import { useSyncedScroll } from "./useSyncedScroll";
 
 const MIN_LEFT_PANEL_WIDTH = 300;

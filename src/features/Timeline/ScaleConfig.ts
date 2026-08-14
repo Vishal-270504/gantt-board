@@ -141,6 +141,18 @@ export function getOffset(
   return ((date.getTime() - base.getTime()) / msPerUnit) * unitWidth;
 }
 
+export const SCALES_WITHOUT_WEEKDAY_TIER: TimelineScale[] = ["quarter", "year"];
+
+export function getHeaderHeight(showDayLabels: boolean, scale: TimelineScale): number {
+  const showTier3 =
+    showDayLabels &&
+    !SCALES_WITHOUT_WEEKDAY_TIER.includes(scale) &&
+    scale !== "week";
+  const totalTiers = showTier3 ? 3 : 2;
+  const tierHeight = 24;
+  return totalTiers * tierHeight;
+}
+
 export interface GridLine {
   offset: number;
 }
