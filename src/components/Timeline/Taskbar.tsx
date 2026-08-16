@@ -130,7 +130,7 @@ export function TaskBar({
   const finalRadius = customizedTaskBarRadius ?? radius;
 
   const barStyle = {
-    "--bar-left": `${left}px`,
+    "--bar-left": `${left-17}px`,
     "--bar-w": `${width}px`,
     "--bar-top": `${top}px`,
     "--bar-h": `${height}px`,

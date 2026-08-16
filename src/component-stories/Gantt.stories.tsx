@@ -134,34 +134,24 @@ export const QA: Story = {
     }],
 
     styleOptions: {
-      "rowHeight": 60,
-
-      "ganttList": {
-        "headerColor": "slate"
-      },
+      "rowHeight": 50,
 
       "taskBar": {
-        "barColor": "blue",
-        "progressColor": "emerald",
-        "projectBarColor": "indigo",
-        "radius": "md",
-        "showTitle": true
+        "barColor": "emerald",
+        "progressColor": "rose",
+        "radius": "full"
       },
 
       "milestone": {
         "backgroundColor": "amber",
-        "shape": "diamond"
+        "shape": "circle"
       },
 
       "timeline": {
         "todayColor": "rose",
         "weekendColor": "slate",
-        "headerColor": "slate"
+        "headerColor": "blue"
       }
-    },
-
-    onTaskDoubleClick: (task: Task) => {
-      console.log("double-clicked:", task);
     },
   },
 };
