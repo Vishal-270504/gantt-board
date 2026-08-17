@@ -39,7 +39,7 @@ interface GanttProps {
       showTitle?: boolean;
     };
     milestone?: {
-      backgroundColor?: GanttColor;
+      milestoneColor?: GanttColor;
       shape?: MilestoneShape;
     };
     timeline?: {
@@ -120,9 +120,9 @@ export function Gantt({
         onTaskDoubleClick
       })
     }
-      if (styleOptions?.milestone?.backgroundColor) {
+      if (styleOptions?.milestone?.milestoneColor) {
         // Wire milestone styles from styleOptions into the store
-        setMilestoneBackgroundColor(styleOptions.milestone.backgroundColor);
+        setMilestoneBackgroundColor(styleOptions.milestone.milestoneColor);
       }
     if (styleOptions?.milestone?.shape) {
       setMilestoneShape(styleOptions.milestone.shape);

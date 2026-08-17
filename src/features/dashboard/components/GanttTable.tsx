@@ -7,7 +7,7 @@ import { useDashboardStore, selectVisibleColumns } from "../store/useDashboardSt
 import type { ColumnConfig, Task } from "../types";
 
 interface GanttTableProps {
-  containerRef: React.RefObject<HTMLDivElement | null>;
+  containerRef: React.RefObject<HTMLDivElement>;
   columns?: ColumnConfig[];
   onTaskDoubleClick?: (task: Task) => void;
 }

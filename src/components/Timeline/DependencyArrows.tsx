@@ -7,10 +7,11 @@ import {
   type DepPoint,
 } from "../ui/dependencyRouter";
 
-const ARROW_COLOR = "#6b7280";
-const ARROW_LEN = 10;
-const ARROW_GAP = 4;
+const ARROW_COLOR = "indigo";
+const ARROW_LEN = 12;
+const ARROW_GAP = 6;
 const PADDING = 16;
+const LINE_OPACITY = 0.7;
 
 // Geometry constants that match Taskbar.tsx
 const BAR_LEFT_OFFSET = 17;
@@ -217,18 +218,17 @@ export function DependencyArrows({ tasks, rowHeight }: DependencyArrowsProps) {
         </marker>
       </defs>
       {adjustedRoutes.map((points, i) => (
-        <path
-          key={keys[i]}
-          d={pointsToPath(points)}
-          fill="none"
-          stroke={ARROW_COLOR}
-          strokeWidth="1.5"
-          strokeDasharray="4 2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          opacity="0.75"
-          markerEnd="url(#arrowhead)"
-        />
+<path
+           key={keys[i]}
+           d={pointsToPath(points)}
+           fill="none"
+           stroke={ARROW_COLOR}
+           strokeWidth="1.5"
+           strokeLinecap="round"
+           strokeLinejoin="round"
+           opacity={LINE_OPACITY}
+           markerEnd="url(#arrowhead)"
+         />
       ))}
     </svg>
   );

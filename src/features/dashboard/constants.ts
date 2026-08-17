@@ -33,6 +33,20 @@ export const GANTT_DATE_FORMATS: DateFormat[] = [
   'MM/DD/YYYY',
   'YYYY-MM-DD',
   'DD MMM YYYY',
+  'MMM DD, YYYY',
+  'YYYY/MM/DD',
+  'DD.MM.YYYY',
+  'MM.MM.YYYY',
+  'DD-MM-YYYY',
+  'MM-DD-YYYY',
+  'DD/MM/YY',
+  'MM/DD/YY',
+  'MMM DD YYYY',
+  'DD MMM, YYYY',
+  'YYYY MMM DD',
+  'DD MMMM YYYY',
+  'MMMM DD, YYYY',
+  'YYYYMMDD',
 ];
 
 // ── Allowed Time Formats ──

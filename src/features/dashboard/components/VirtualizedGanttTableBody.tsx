@@ -62,23 +62,23 @@ export function VirtualizedGanttTableBody({
           const task = positionedTasks[virtualItem.index];
           if (!task) return null;
           return (
-            <GanttTableRow
-              key={task.id}
-              task={task}
-              depth={task.depth}
-              isExpanded={!!expandedIds[task.id]}
-              hasChildren={tasks.some((t) => t.parentId === task.id)}
-              widths={widths}
-              columns={columns}
-              onTaskDoubleClick={onTaskDoubleClick}
-              style={{
-                position: "absolute",
-                top: virtualItem.start,
-                left: 0,
-                right: 0,
-                height: rowHeight,
-              }}
-            />
+           <GanttTableRow
+               key={task.id}
+               task={task}
+               depth={task.depth}
+               isExpanded={!!expandedIds[task.id]}
+               hasChildren={tasks.some((t) => t.parentId === task.id)}
+               widths={widths}
+               columns={columns}
+               onTaskDoubleClick={onTaskDoubleClick}
+               style={{
+                 position: "absolute",
+                 top: virtualItem.start,
+                 left: 0,
+                 right: 0,
+                 height: rowHeight,
+               }}
+             />
           );
         })}
       </div>

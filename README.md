@@ -130,15 +130,45 @@ type DateFormat =
   | "DD/MM/YYYY"
   | "MM/DD/YYYY"
   | "YYYY-MM-DD"
-  | "DD MMM YYYY";
+  | "DD MMM YYYY"
+  | "MMM DD, YYYY"
+  | "YYYY/MM/DD"
+  | "DD.MM.YYYY"
+  | "MM.MM.YYYY"
+  | "DD-MM-YYYY"
+  | "MM-DD-YYYY"
+  | "DD/MM/YY"
+  | "MM/DD/YY"
+  | "MMM DD YYYY"
+  | "DD MMM, YYYY"
+  | "YYYY MMM DD"
+  | "DD MMMM YYYY"
+  | "MMMM DD, YYYY"
+  | "YYYYMMDD"
+  | "YYYY/DD/MM"
+  | "YYYY-DD-MM"
+  | "YYYY.MM.DD"
+  | "DD.MM.YY"
+  | "YY-MM-DD"
+  | "DD-MMMM-YYYY"
+  | "MMMM D, YYYY"
+  | "MMM D, YYYY"
+  | "DD MMMM"
+  | "MMMM YYYY"
+  | "MMM YYYY"
+  | "DD-MM-YY"
+  | "MM-DD-YY"
+  | "D MMM YYYY"
+  | "MMMM D YYYY";
 
 type TimeFormat =
   | "12-hour"
   | "24-hour";
 
 type FormatDateOptions = {
-  dateFormat?: DateFormat;
-  timeFormat?: TimeFormat;
+  dateFormat?: 'DD/MM/YYYY';
+  timeFormat?: '12-hour' | '24-hour';
+  showTime?: boolean;
 };
 
 type ColumnKey = "title" | "startDate" | "endDate" | "duration" | "progress" | "predecessors" | "assignee";
@@ -180,7 +210,7 @@ interface GanttProps {
       };
 
       milestone?: {
-        backgroundColor?: Color;
+        milestoneColor?: Color;
         shape?: MilestoneShape;
     };
 
@@ -234,7 +264,7 @@ interface GanttProps {
 | `render`     | `(task: Task) => React.ReactNode` | no       | Custom renderer for this column's cell. Receives the full `task`. Falls back to the default cell rendering if omitted |
 | `dateFormat` | `DateFormat`                      | no       | Date format for this column. Only meaningful for `startDate` / `endDate` columns                                      |
 
-> **Date format options:** `DD/MM/YYYY`, `MM/DD/YYYY`, `YYYY-MM-DD`, `DD MMM YYYY`
+> **Date format options:** `DD/MM/YYYY`, `MM/DD/YYYY`, `YYYY-MM-DD`, `DD MMM YYYY`, `MMM DD, YYYY`, `YYYY/MM/DD`, `DD.MM.YYYY`, `MM.MM.YYYY`, `DD-MM-YYYY`, `MM-DD-YYYY`, `DD/MM/YY`, `MM/DD/YY`, `MMM DD YYYY`, `DD MMM, YYYY`, `YYYY MMM DD`, `DD MMMM YYYY`, `MMMM DD, YYYY`, `YYYYMMDD`, `YYYY/DD/MM`, `YYYY-DD-MM`, `YYYY.MM.DD`, `DD.MM.YY`, `YY-MM-DD`, `DD-MMMM-YYYY`, `MMMM D, YYYY`, `MMM D, YYYY`, `DD MMMM`, `MMMM YYYY`, `MMM YYYY`, `DD-MM-YY`, `MM-DD-YY`, `D MMM YYYY`, `MMMM D YYYY`
 
 > **`ColumnKey` options:** `title`, `startDate`, `endDate`, `duration`, `progress`, `predecessors`, `assignee`
 
@@ -284,7 +314,7 @@ interface GanttProps {
 
 | Property          | Type                                              | Default     | Description                     |
 | ----------------- | ------------------------------------------------- | ----------- | ------------------------------- |
-| `backgroundColor` | `Color`                                           | `"amber"`   | Color of the milestone marker   |
+| `milestoneColor`   | `Color`                                           | `"amber"`   | Color of the milestone marker   |
 | `shape`           | `"diamond" \| "circle" \| "square" \| "triangle"` | `"diamond"` | Shape used to render milestones |
 
 #### Timeline
