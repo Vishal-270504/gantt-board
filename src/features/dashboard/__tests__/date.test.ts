@@ -24,19 +24,19 @@ describe('formatDate', () => {
 
   it('should format dates in DD/MM/YYYY format', () => {
     const date = '2026-08-17T12:00:00';
-    const result = formatDate(date, { dateFormat: 'DD/MM/YYYY' });
+    const result = formatDate(date, { dateFormat: 'DD/MM/YYYY', showTime: false });
     expect(result).toBe('17/08/2026');
   });
 
   it('should format dates in MM/DD/YYYY format', () => {
     const date = '2026-08-17T12:00:00';
-    const result = formatDate(date, { dateFormat: 'MM/DD/YYYY' });
+    const result = formatDate(date, { dateFormat: 'MM/DD/YYYY', showTime: false });
     expect(result).toBe('08/17/2026');
   });
 
   it('should format dates in YYYY-MM-DD format', () => {
     const date = '2026-08-17T12:00:00';
-    const result = formatDate(date, { dateFormat: 'YYYY-MM-DD' });
+    const result = formatDate(date, { dateFormat: 'YYYY-MM-DD', showTime: false });
     expect(result).toBe('2026-08-17');
   });
 

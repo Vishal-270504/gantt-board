@@ -26,15 +26,6 @@ export function useGanttController(): GanttRow[] {
       const taskStart = toDate(task.startDate);
       const taskEnd = toDate(task.endDate);
       
-      // Validate dates before using in calculations
-      if (isNaN(taskStart.getTime()) || isNaN(taskEnd.getTime())) {
-        return {
-          ...task,
-          left: 0,
-          width: 0,
-        };
-      }
-      
       const taskEndInclusive =
         task.type === "milestone"
           ? taskEnd

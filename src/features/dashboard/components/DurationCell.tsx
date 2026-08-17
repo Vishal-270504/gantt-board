@@ -5,6 +5,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { formatDate, type FormatDateOptions } from '../utils/date';
+import { toDate } from '@/lib/dateutils';
 import { useDashboardStore, selectDateFormat, selectTimeFormat } from '../store/useDashboardStore';
 
 interface DurationCellProps {
@@ -25,7 +26,7 @@ export function DurationCell({ startDate, endDate, width, dateFormat: dateFormat
     showTime: true,
   };
 
-  const durationMs = new Date(endDate).getTime() - new Date(startDate).getTime();
+  const durationMs = toDate(endDate).getTime() - toDate(startDate).getTime();
   const totalHours = Math.max(0, Math.floor(durationMs / (60 * 60 * 1000)));
   const days = Math.floor(totalHours / 24);
   const hours = totalHours % 24;

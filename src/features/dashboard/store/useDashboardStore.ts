@@ -31,10 +31,10 @@ export const getTimelineRangeForTasks = (tasks: Task[]) => {
   let maxTime = -Infinity;
 
   tasks.forEach((t) => {
-    const s = new Date(t.startDate).getTime();
-    const e = new Date(t.endDate).getTime();
-    if (!isNaN(s) && s < minTime) minTime = s;
-    if (!isNaN(e) && e > maxTime) maxTime = e;
+    const s = toDate(t.startDate).getTime();
+    const e = toDate(t.endDate).getTime();
+    if (s < minTime) minTime = s;
+    if (e > maxTime) maxTime = e;
   });
 
   const start = new Date(minTime - 7 * 24 * 60 * 60 * 1000);
@@ -88,8 +88,9 @@ function validateTask(task: Task, index: number, allTasks: Task[]): void {
   if (!task.startDate || typeof task.startDate !== 'string') {
     console.warn(`Task at index ${index} has invalid or missing startDate`);
   } else {
-    const startDate = new Date(task.startDate);
-    if (isNaN(startDate.getTime())) {
+    try {
+      toDate(task.startDate);
+    } catch {
       console.warn(`Task at index ${index} has invalid startDate: ${task.startDate}`);
     }
   }
@@ -97,8 +98,9 @@ function validateTask(task: Task, index: number, allTasks: Task[]): void {
   if (!task.endDate || typeof task.endDate !== 'string') {
     console.warn(`Task at index ${index} has invalid or missing endDate`);
   } else {
-    const endDate = new Date(task.endDate);
-    if (isNaN(endDate.getTime())) {
+    try {
+      toDate(task.endDate);
+    } catch {
       console.warn(`Task at index ${index} has invalid endDate: ${task.endDate}`);
     }
   }
@@ -190,17 +192,6 @@ export function computePositionedTasks(
   return visible.map((task, index) => {
     const taskStart = toDate(task.startDate);
     const taskEnd = toDate(task.endDate);
-    
-    // Validate dates before using in calculations
-    if (isNaN(taskStart.getTime()) || isNaN(taskEnd.getTime())) {
-      return {
-        ...task,
-        left: 0,
-        width: 0,
-        top: index * ROW_HEIGHT,
-        rowHeight: ROW_HEIGHT,
-      };
-    }
     
     const taskEndInclusive =
       task.type === "milestone"

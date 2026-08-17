@@ -1,3 +1,9 @@
 export function toDate(iso: string): Date {
-  return new Date(iso);
+  const date = new Date(iso);
+
+  if (Number.isNaN(date.getTime())) {
+    throw new Error(`Invalid date: ${iso}`);
+  }
+
+  return date;
 }

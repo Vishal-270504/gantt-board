@@ -1,6 +1,10 @@
-import { describe, it, expect, vi } from 'vitest';
-import { validateTasks } from '../store/useDashboardStore';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { useDashboardStore } from '../store/useDashboardStore';
 import type { Task } from '../types';
+
+function validateTasks(tasks: Task[]) {
+  useDashboardStore.getState().setTasks(tasks as Task[]);
+}
 
 describe('Task validation', () => {
   let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
@@ -58,11 +62,10 @@ describe('Task validation', () => {
       },
     ];
 
-    validateTasks(tasks);
-    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('invalid startDate'));
+    expect(() => validateTasks(tasks)).toThrow('Invalid date: invalid-date');
   });
 
-  it('should warn for invalid end date', () => {
+  it('should throw for invalid end date', () => {
     const tasks: Task[] = [
       {
         id: 'task-1',
@@ -75,8 +78,7 @@ describe('Task validation', () => {
       },
     ];
 
-    validateTasks(tasks);
-    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('invalid endDate'));
+    expect(() => validateTasks(tasks)).toThrow('Invalid date: invalid-date');
   });
 
   it('should warn for invalid progress value', () => {
@@ -200,8 +202,7 @@ describe('Task validation', () => {
     expect(consoleWarnSpy).not.toHaveBeenCalled();
   });
 
-  it('should warn for non-array tasks', () => {
-    validateTasks(null as any);
-    expect(consoleWarnSpy).toHaveBeenCalledWith('Tasks must be an array');
+  it('should throw for non-array tasks', () => {
+    expect(() => validateTasks(null as any)).toThrow();
   });
 });

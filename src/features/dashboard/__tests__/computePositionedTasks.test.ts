@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import type { Task, TimelineScale } from '../types';
 import { computePositionedTasks } from '../store/useDashboardStore';
 
@@ -103,7 +103,7 @@ describe('computePositionedTasks', () => {
     expect(result[0].width).toBe(0); // Milestones have zero width
   });
 
-  it('should handle invalid dates gracefully', () => {
+  it('should throw for invalid dates', () => {
     const tasks: Task[] = [
       {
         id: 'invalid-task',
@@ -116,10 +116,9 @@ describe('computePositionedTasks', () => {
       },
     ];
 
-    const result = computePositionedTasks(tasks, {}, scale, timelineStart);
-    expect(result.length).toBe(1);
-    expect(result[0].left).toBe(0);
-    expect(result[0].width).toBe(0);
+    expect(() => computePositionedTasks(tasks, {}, scale, timelineStart)).toThrow(
+      'Invalid date: invalid-date',
+    );
   });
 
   it('should compute correct depth for deeply nested tasks', () => {
