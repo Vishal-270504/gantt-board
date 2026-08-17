@@ -98,7 +98,6 @@ export interface DisplayOptions {
   showDependencies?: boolean;
   showDayLabels?: boolean;
   timeFormat?: TimeFormat;
-  showDependenices?: boolean;
 }
 
 // ── Column Configuration ──

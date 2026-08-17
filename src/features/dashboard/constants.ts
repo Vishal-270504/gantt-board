@@ -47,6 +47,21 @@ export const GANTT_DATE_FORMATS: DateFormat[] = [
   'DD MMMM YYYY',
   'MMMM DD, YYYY',
   'YYYYMMDD',
+  'YYYY/DD/MM',
+  'YYYY-DD-MM',
+  'YYYY.MM.DD',
+  'DD.MM.YY',
+  'YY-MM-DD',
+  'DD-MMMM-YYYY',
+  'MMMM D, YYYY',
+  'MMM D, YYYY',
+  'DD MMMM',
+  'MMMM YYYY',
+  'MMM YYYY',
+  'DD-MM-YY',
+  'MM-DD-YY',
+  'D MMM YYYY',
+  'MMMM D YYYY',
 ];
 
 // ── Allowed Time Formats ──
@@ -86,6 +101,14 @@ export const GANTT_COLUMNS: GanttColumn[] = [
   { id: 'predecessors', label: 'Predecessors', width: '130px' },
   { id: 'assignee', label: 'Assignee', width: '140px' },
 ];
+
+// ── Time Constants ──
+export const MS_PER_DAY = 86_400_000;
+
+// ── Layout Constants ──
+export const ROW_HEIGHT = 40;
+export const MIN_LEFT_PANEL_WIDTH = 300;
+export const MAX_LEFT_PANEL_WIDTH = 800;
 
 // ── Column Widths Helper ──
 export function getInitialColumnWidths(): ColumnWidths {

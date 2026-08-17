@@ -1,6 +1,8 @@
+import type { DateFormat, TimeFormat } from '../types';
+
 export interface FormatDateOptions {
-  dateFormat?: 'DD/MM/YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD' | 'DD MMM YYYY' | 'MMM DD, YYYY' | 'YYYY/MM/DD' | 'DD.MM.YYYY' | 'MM.MM.YYYY' | 'DD-MM-YYYY' | 'MM-DD-YYYY' | 'DD/MM/YY' | 'MM/DD/YY' | 'MMM DD YYYY' | 'DD MMM, YYYY' | 'YYYY MMM DD' | 'DD MMMM YYYY' | 'MMMM DD, YYYY' | 'YYYYMMDD' | 'YYYY/DD/MM' | 'YYYY-DD-MM' | 'YYYY.MM.DD' | 'DD.MM.YY' | 'YY-MM-DD' | 'DD-MMMM-YYYY' | 'MMMM D, YYYY' | 'MMM D, YYYY' | 'DD MMMM' | 'MMMM YYYY' | 'MMM YYYY' | 'DD-MM-YY' | 'MM-DD-YY' | 'D MMM YYYY' | 'MMMM D YYYY';
-  timeFormat?: '12-hour' | '24-hour';
+  dateFormat?: DateFormat;
+  timeFormat?: TimeFormat;
   showTime?: boolean;
 }
 

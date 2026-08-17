@@ -5,12 +5,12 @@ import {
   selectExpandedIds,
   selectScale,
   selectTimelineStart,
+  computeVisibleTasks,
 } from "../dashboard/store/useDashboardStore";
 import { getOffset } from "./ScaleConfig";
 import { toDate } from "../../lib/dateutils";
+import { ROW_HEIGHT, MS_PER_DAY } from "../dashboard/constants";
 import type { GanttRow, VisibleTask } from "../dashboard/types";
-
-const ROW_HEIGHT = 40;
 
 export function useGanttController(): GanttRow[] {
   const tasks = useDashboardStore(selectDashboardTasks);
@@ -20,32 +20,25 @@ export function useGanttController(): GanttRow[] {
 
   
   return useMemo(() => {
-    const byParent: Record<string, typeof tasks> = {};
-
-    tasks.forEach((t) => {
-      const key = t.parentId ?? "root";
-      (byParent[key] ??= []).push(t);
-    });
-
-    const visibleTasks: VisibleTask[] = [];
-    const walk = (parentId: string, depth: number) => {
-      (byParent[parentId] ?? []).forEach((t) => {
-        visibleTasks.push({ ...t, depth });
-        if (byParent[t.id] && expandedIds[t.id]) {
-          walk(t.id, depth + 1);
-        }
-      });
-    };
-
-    walk("root", 0);
+    const visibleTasks = computeVisibleTasks(tasks, expandedIds);
 
     return visibleTasks.map((task) => {
       const taskStart = toDate(task.startDate);
       const taskEnd = toDate(task.endDate);
+      
+      // Validate dates before using in calculations
+      if (isNaN(taskStart.getTime()) || isNaN(taskEnd.getTime())) {
+        return {
+          ...task,
+          left: 0,
+          width: 0,
+        };
+      }
+      
       const taskEndInclusive =
         task.type === "milestone"
           ? taskEnd
-          : new Date(taskEnd.getTime() + 86_400_000);
+          : new Date(taskEnd.getTime() + MS_PER_DAY);
 
       const left = getOffset(taskStart, timelineStart, scale);
       const width =
@@ -62,4 +55,3 @@ export function useGanttController(): GanttRow[] {
   }, [tasks, expandedIds, scale, timelineStart]);
 }
 
-export { ROW_HEIGHT };

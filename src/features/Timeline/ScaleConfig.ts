@@ -1,4 +1,5 @@
 import type { TimelineScale } from "../dashboard/types/index";
+import { MS_PER_DAY } from "../dashboard/constants";
 
 export interface HeaderGroup {
   label: string;
@@ -14,7 +15,6 @@ export interface ScaleConfig {
   formatUnit: (date: Date, timeFormat?: boolean) => string;
 }
 
-const MS_PER_DAY = 86_400_000;
 const MS_PER_HOUR = 3_600_000;
 
 const eachDay = (start: Date, end: Date): Date[] => {

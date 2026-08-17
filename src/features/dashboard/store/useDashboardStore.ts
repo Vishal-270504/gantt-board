@@ -11,11 +11,9 @@ import type {
   MilestoneShape,
 } from "../types";
 import { mockTasks } from "../mockData";
-import { DEFAULT_GANTT_CUSTOMIZATION } from "../constants";
+import { DEFAULT_GANTT_CUSTOMIZATION, ROW_HEIGHT, MS_PER_DAY } from "../constants";
 import { getOffset } from "@/features/Timeline/ScaleConfig";
 import { toDate } from "@/lib/dateutils";
-
-const ROW_HEIGHT = 40;
 
 export const getTimelineRangeForTasks = (tasks: Task[]) => {
   if (!tasks || tasks.length === 0) {
@@ -57,12 +55,10 @@ function buildByParent(tasks: Task[]): Record<string, Task[]> {
   return map;
 }
 
-function computePositionedTasks(
+export function computeVisibleTasks(
   tasks: Task[],
   expandedIds: Record<string, boolean>,
-  scale: TimelineScale,
-  timelineStart: Date,
-): PositionedTask[] {
+): VisibleTask[] {
   const byParent = buildByParent(tasks);
 
   const visible: VisibleTask[] = [];
@@ -75,14 +71,141 @@ function computePositionedTasks(
     });
   };
   walk("root", 0);
+  return visible;
+}
+
+function validateTask(task: Task, index: number, allTasks: Task[]): void {
+  // Validate required fields
+  if (!task.id || typeof task.id !== 'string' || task.id.trim() === '') {
+    console.warn(`Task at index ${index} has invalid or missing id`);
+  }
+  
+  if (!task.title || typeof task.title !== 'string' || task.title.trim() === '') {
+    console.warn(`Task at index ${index} has invalid or missing title`);
+  }
+  
+  // Validate dates
+  if (!task.startDate || typeof task.startDate !== 'string') {
+    console.warn(`Task at index ${index} has invalid or missing startDate`);
+  } else {
+    const startDate = new Date(task.startDate);
+    if (isNaN(startDate.getTime())) {
+      console.warn(`Task at index ${index} has invalid startDate: ${task.startDate}`);
+    }
+  }
+  
+  if (!task.endDate || typeof task.endDate !== 'string') {
+    console.warn(`Task at index ${index} has invalid or missing endDate`);
+  } else {
+    const endDate = new Date(task.endDate);
+    if (isNaN(endDate.getTime())) {
+      console.warn(`Task at index ${index} has invalid endDate: ${task.endDate}`);
+    }
+  }
+  
+  // Validate progress
+  if (typeof task.progress !== 'number' || task.progress < 0 || task.progress > 100) {
+    console.warn(`Task at index ${index} has invalid progress value: ${task.progress}`);
+  }
+  
+  // Validate type
+  if (task.type && !['project', 'task', 'milestone'].includes(task.type)) {
+    console.warn(`Task at index ${index} has invalid type: ${task.type}`);
+  }
+  
+  // Validate parentId
+  if (task.parentId !== null && typeof task.parentId !== 'string') {
+    console.warn(`Task at index ${index} has invalid parentId: ${task.parentId}`);
+  }
+  
+  // Validate predecessors
+  if (task.predecessors && !Array.isArray(task.predecessors)) {
+    console.warn(`Task at index ${index} has invalid predecessors: ${task.predecessors}`);
+  }
+}
+
+function hasCircularDependency(tasks: Task[]): boolean {
+  const taskMap = new Map<string, Task>(tasks.map(task => [task.id, task]));
+  const visited = new Set<string>();
+  const recursionStack = new Set<string>();
+
+  function checkDependency(taskId: string): boolean {
+    if (recursionStack.has(taskId)) {
+      return true; // Circular dependency detected
+    }
+    
+    if (visited.has(taskId)) {
+      return false; // Already checked, no circular dependency from here
+    }
+
+    visited.add(taskId);
+    recursionStack.add(taskId);
+
+    const task = taskMap.get(taskId);
+    if (task?.predecessors) {
+      for (const predecessorId of task.predecessors) {
+        if (taskMap.has(predecessorId) && checkDependency(predecessorId)) {
+          return true;
+        }
+      }
+    }
+
+    recursionStack.delete(taskId);
+    return false;
+  }
+
+  for (const task of tasks) {
+    if (checkDependency(task.id)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function validateTasks(tasks: Task[]): void {
+  if (!Array.isArray(tasks)) {
+    console.warn('Tasks must be an array');
+    return;
+  }
+  
+  // Check for circular dependencies
+  if (hasCircularDependency(tasks)) {
+    console.warn('Circular dependency detected in tasks');
+  }
+  
+  tasks.forEach((task, index) => {
+    validateTask(task, index, tasks);
+  });
+}
+
+export function computePositionedTasks(
+  tasks: Task[],
+  expandedIds: Record<string, boolean>,
+  scale: TimelineScale,
+  timelineStart: Date,
+): PositionedTask[] {
+  const visible = computeVisibleTasks(tasks, expandedIds);
 
   return visible.map((task, index) => {
     const taskStart = toDate(task.startDate);
     const taskEnd = toDate(task.endDate);
+    
+    // Validate dates before using in calculations
+    if (isNaN(taskStart.getTime()) || isNaN(taskEnd.getTime())) {
+      return {
+        ...task,
+        left: 0,
+        width: 0,
+        top: index * ROW_HEIGHT,
+        rowHeight: ROW_HEIGHT,
+      };
+    }
+    
     const taskEndInclusive =
       task.type === "milestone"
         ? taskEnd
-        : new Date(taskEnd.getTime() + 86_400_000);
+        : new Date(taskEnd.getTime() + MS_PER_DAY);
 
     const left = getOffset(taskStart, timelineStart, scale);
     const width =
@@ -286,6 +409,9 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
   setIsLoading: (isLoading) => set(() => ({ isLoading })),
 
   setTasks: (tasks) => {
+    // Validate task structure
+    validateTasks(tasks);
+    
     const state = get();
     const range = getTimelineRangeForTasks(tasks);
     const nextPositioned = computePositionedTasks(
