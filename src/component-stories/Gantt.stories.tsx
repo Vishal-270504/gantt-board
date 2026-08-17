@@ -1,4 +1,4 @@
-import type { Meta, StoryObj, StoryFn } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import { Gantt } from "../features/dashboard/components/Gantt";
 import { mockTasks } from "../features/dashboard/mockData";
 import type { ColumnConfig } from "../features/dashboard/types";
@@ -108,32 +108,33 @@ interface CustomRenderArgs {
   showPredecessors: boolean;
 }
 
-// Custom Render with Controls Story - using StoryFn approach
-export const CustomRenderWithControls: StoryFn = (args: CustomRenderArgs) => {
-  const {
-    tasks,
-    displayOptions,
-    styleOptions,
-    showCustomProgress,
-    progressColorLow,
-    progressColorHigh,
-    progressBgColor,
-    progressPadding,
-    progressFontWeight,
-    progressFontSize,
-    showCustomAssignee,
-    assigneeBgColor,
-    assigneePadding,
-    assigneeFontWeight,
-    assigneeFontSize,
-    assigneeTextColor,
-    assigneeUnassignedText,
-    assigneeShowUnassigned,
-    showStartDate,
-    showEndDate,
-    showDuration,
-    showPredecessors,
-  } = args;
+// Custom Render with Controls Story
+export const CustomRenderWithControls: StoryObj<CustomRenderArgs> = {
+  render: (args) => {
+    const {
+      tasks,
+      displayOptions,
+      styleOptions,
+      showCustomProgress,
+      progressColorLow,
+      progressColorHigh,
+      progressBgColor,
+      progressPadding,
+      progressFontWeight,
+      progressFontSize,
+      showCustomAssignee,
+      assigneeBgColor,
+      assigneePadding,
+      assigneeFontWeight,
+      assigneeFontSize,
+      assigneeTextColor,
+      assigneeUnassignedText,
+      assigneeShowUnassigned,
+      showStartDate,
+      showEndDate,
+      showDuration,
+      showPredecessors,
+    } = args;
 
   // Build columns with optional custom renders
   const columns: ColumnConfig[] = [
@@ -229,12 +230,11 @@ export const CustomRenderWithControls: StoryFn = (args: CustomRenderArgs) => {
       columns={columns}
       styleOptions={styleOptions}
     />
-  );
-};
+    );
+  },
 
-// Set the args and argTypes for the CustomRenderWithControls story
-CustomRenderWithControls.args = {
-  tasks: mockTasks,
+  args: {
+    tasks: mockTasks,
   displayOptions: {
     scale: "week",
     availableScales: ["hour", "day", "week", "month", "quarter", "year"],
@@ -279,10 +279,9 @@ CustomRenderWithControls.args = {
   showEndDate: true,
   showDuration: true,
   showPredecessors: true,
-};
-
-CustomRenderWithControls.argTypes = {
-  showCustomProgress: { 
+  },
+  argTypes: {
+    showCustomProgress: { 
     control: "boolean",
     description: "Enable custom progress render"
   },
@@ -359,5 +358,6 @@ CustomRenderWithControls.argTypes = {
   showPredecessors: { 
     control: "boolean",
     description: "Show Predecessors column"
+  },
   },
 };
