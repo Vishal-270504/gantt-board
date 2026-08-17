@@ -1,4 +1,6 @@
-import { create } from "zustand";
+import { createContext, useContext } from "react";
+import { createStore, useStore } from "zustand";
+import type { StoreApi } from "zustand";
 import type {
   Task,
   GanttCustomization,
@@ -268,7 +270,7 @@ interface DashboardActions {
   setMilestoneShape: (shape: MilestoneShape) => void;
 }
 
-type DashboardStore = DashboardState & DashboardActions;
+export type DashboardStore = DashboardState & DashboardActions;
 
 function createInitialState(): DashboardState {
   const tasks = mockTasks;
@@ -306,7 +308,8 @@ function createInitialState(): DashboardState {
   };
 }
 
-export const useDashboardStore = create<DashboardStore>((set, get) => ({
+export function createDashboardStore(): StoreApi<DashboardStore> {
+  return createStore<DashboardStore>((set, get) => ({
   ...createInitialState(),
 
   expandTask: (id) => {
@@ -497,7 +500,29 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
   setMilestoneBackgroundColor: (milestoneBackgroundColor) =>
     set({ milestoneBackgroundColor }),
   setMilestoneShape: (milestoneShape) => set({ milestoneShape }),
-}));
+  }));
+}
+
+const GanttStoreContext = createContext<StoreApi<DashboardStore> | null>(null);
+
+export function useDashboardStoreApi(): StoreApi<DashboardStore> {
+  const store = useContext(GanttStoreContext);
+  if (!store) {
+    throw new Error(
+      "useDashboardStore must be used within a <GanttStoreProvider>.",
+    );
+  }
+  return store;
+}
+
+export function useDashboardStore<T>(
+  selector: (state: DashboardStore) => T,
+): T {
+  const store = useDashboardStoreApi();
+  return useStore(store, selector);
+}
+
+export { GanttStoreContext };
 
 // ── Selectors ──
 export const selectDashboardTasks = (state: DashboardStore) => state.tasks;

@@ -18,6 +18,7 @@ import type {
   MilestoneShape,
 } from "../types";
 import { useDashboardStore } from "../store/useDashboardStore";
+import { GanttStoreProvider } from "../store/GanttStoreProvider";
 import { useSyncedScroll } from "./useSyncedScroll";
 import { MIN_LEFT_PANEL_WIDTH, MAX_LEFT_PANEL_WIDTH } from "../constants";
 
@@ -78,6 +79,26 @@ interface GanttProps {
 }
 
 export function Gantt({
+  tasks,
+  displayOptions,
+  columns,
+  onTaskDoubleClick,
+  styleOptions,
+}: GanttProps) {
+  return (
+    <GanttStoreProvider>
+      <GanttInner
+        tasks={tasks}
+        displayOptions={displayOptions}
+        columns={columns}
+        onTaskDoubleClick={onTaskDoubleClick}
+        styleOptions={styleOptions}
+      />
+    </GanttStoreProvider>
+  );
+}
+
+function GanttInner({
   tasks,
   displayOptions,
   columns,

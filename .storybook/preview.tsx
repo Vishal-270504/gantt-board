@@ -1,5 +1,6 @@
 import type { Preview } from '@storybook/react-vite';
 import { TooltipProvider } from '../src/components/ui/tooltip';
+import { GanttStoreProvider } from '../src/features/dashboard/store/GanttStoreProvider';
 import '../src/index.css'; // Make sure your Tailwind CSS is imported
 
 const preview: Preview = {
@@ -14,9 +15,11 @@ const preview: Preview = {
   },
   decorators: [
     (Story) => (
-      <TooltipProvider>
-        <Story />
-      </TooltipProvider>
+      <GanttStoreProvider>
+        <TooltipProvider>
+          <Story />
+        </TooltipProvider>
+      </GanttStoreProvider>
     ),
   ],
 };

@@ -17,4 +17,5 @@ export * from './components/ExpandCollapseButton';
 export * from './components/Gantt';
 export * from './components/TimelinePlaceholder';
 export * from './store/useDashboardStore';
+export * from './store/GanttStoreProvider';
 export * from './utils/date';

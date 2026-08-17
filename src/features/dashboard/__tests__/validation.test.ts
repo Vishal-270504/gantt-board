@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { useDashboardStore } from '../store/useDashboardStore';
+import { createDashboardStore } from '../store/useDashboardStore';
 import type { Task } from '../types';
 
 function validateTasks(tasks: Task[]) {
-  useDashboardStore.getState().setTasks(tasks as Task[]);
+  createDashboardStore().getState().setTasks(tasks as Task[]);
 }
 
 describe('Task validation', () => {
