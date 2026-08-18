@@ -21,16 +21,16 @@ interface TaskBarProps {
   height: number;
   progress: number;
   title: string;
-  hasParentId?: boolean;
-  projectBarColor?: GanttColor;
-  assignee?: string;
-  type?: Task["type"];
-  barColor?: GanttColor;
-  progressColor?: GanttColor;
-  radius?: GanttCustomization["taskBarRadius"];
+  hasParentId?: boolean | undefined;
+  projectBarColor?: GanttColor | undefined;
+  assignee?: string | undefined;
+  type?: Task["type"] | undefined;
+  barColor?: GanttColor | undefined;
+  progressColor?: GanttColor | undefined;
+  radius?: GanttCustomization["taskBarRadius"] | undefined;
   task: Task;
-  onDoubleClick?: (task: Task) => void;
-  showTitle?: GanttCustomization["showTitle"]
+  onDoubleClick?: ((task: Task) => void) | undefined;
+  showTitle?: GanttCustomization["showTitle"] | undefined
 }
 
 // Tailwind classes are written out explicitly so the JIT compiler can detect them.
