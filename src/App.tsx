@@ -1,9 +1,6 @@
 import { Gantt, mockTasks } from "./features/dashboard";
 
 export default function App() {
-  function myFn() {
-    console.log("Some log");
-  }
   return (
     <div className="min-h-screen w-full">
       <Gantt
@@ -31,8 +28,9 @@ export default function App() {
           showDayLabels: true,
           timeFormat: "12-hour"
         }}
-        onTaskDoubleClick={myFn}
-
+        onTaskDoubleClick={() => {
+          // Task double-click behavior can be wired up here.
+        }}
       />
     </div>
   );
