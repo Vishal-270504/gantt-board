@@ -34,7 +34,7 @@ function formatDatePart(date: Date, format: FormatDateOptions['dateFormat']): st
       return `${year}/${month}/${day}`;
     case 'DD.MM.YYYY':
       return `${day}.${month}.${year}`;
-    case 'MM.MM.YYYY':
+    case 'MM.DD.YYYY':
       return `${month}.${day}.${year}`;
     case 'DD-MM-YYYY':
       return `${day}-${month}-${year}`;

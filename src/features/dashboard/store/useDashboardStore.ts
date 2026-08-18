@@ -143,7 +143,12 @@ function hasCircularDependency(tasks: Task[]): boolean {
     recursionStack.add(taskId);
 
     const task = taskMap.get(taskId);
-    if (task?.predecessors) {
+    if (!task) {
+      recursionStack.delete(taskId);
+      return false;
+    }
+
+    if (task.predecessors) {
       for (const predecessorId of task.predecessors) {
         if (taskMap.has(predecessorId) && checkDependency(predecessorId)) {
           return true;
@@ -182,7 +187,12 @@ function hasHierarchyCycle(tasks: Task[]): boolean {
     inStack.add(taskId);
 
     const task = taskMap.get(taskId);
-    if (task?.parentId !== null) {
+    if (!task) {
+      inStack.delete(taskId);
+      return false;
+    }
+
+    if (task.parentId !== null) {
       if (taskMap.has(task.parentId) && checkParentCycle(task.parentId)) {
         return true;
       }
@@ -228,7 +238,7 @@ function validateTasks(tasks: Task[]): void {
 
   for (const task of tasks) {
     if (task.parentId !== null && !taskMap.has(task.parentId)) {
-      throw new Error(`Task "${task.id}" has invalidparentId: ${task.parentId}`);
+      throw new Error(`Task "${task.id}" has invalid parentId: ${task.parentId}`);
     }
   }
 

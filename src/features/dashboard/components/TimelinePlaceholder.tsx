@@ -13,7 +13,7 @@ export function TimelinePlaceholder({ visibleTasks, scrollRef, onScroll }: Timel
   return (
     <div 
       className="absolute inset-0 flex items-center justify-center border-2 border-dashed border-muted-foreground/30 m-8 rounded-lg text-muted-foreground overflow-auto"
-      ref={scrollRef as any}
+      ref={scrollRef}
       onScroll={onScroll}
     >
       <div className="text-center">

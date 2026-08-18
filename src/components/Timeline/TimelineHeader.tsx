@@ -53,7 +53,7 @@ interface TimelineHeaderProps {
   showDayLabels?: boolean;
   weekendColor?: GanttColor;
   headerColor?: GanttColor;
-  timeformat?: TimeFormat;
+  timeFormat?: TimeFormat;
 }
 
 function TimelineHeaderComponent({
@@ -63,7 +63,7 @@ function TimelineHeaderComponent({
   showDayLabels = false,
   weekendColor,
   headerColor,
-  timeformat
+  timeFormat,
 }: TimelineHeaderProps) {
   const config = SCALE_CONFIGS[scale];
   
@@ -100,7 +100,6 @@ function TimelineHeaderComponent({
       ? cn(weekendBg, weekendText)
       : undefined;
 
-      // console.log(groups)
   return (
     <div
       className={cn(
@@ -111,7 +110,7 @@ function TimelineHeaderComponent({
     >
       {/* Tier 1: groups (e.g. months, weeks, quarters) */}
       <div className="flex border-b h-6">
-        {groups.map((g, i) => {
+        {groups.map((g) => {
           const label =
             scale === "hour" ? formatHourGroupLabel(g.label) : g.label;
 
@@ -125,7 +124,7 @@ function TimelineHeaderComponent({
 
           return (
             <div
-              key={i}
+              key={`${g.start.getTime()}-${g.label}`}
               className={cn(
                 "flex items-center justify-center border-r px-2 text-xs font-medium text-muted-foreground w-[var(--group-w)] h-full truncate",
                 isHourWeekend && weekendBg,
@@ -141,7 +140,7 @@ function TimelineHeaderComponent({
 
       {/* Tier 2: units (e.g. hours, day numbers) */}
       <div className="flex h-6">
-        {units.map((u, i) => {
+        {units.map((u) => {
           const unitStyle = {
             "--unit-w": `${config.unitWidth}px`,
           } as CSSProperties;
@@ -151,7 +150,7 @@ function TimelineHeaderComponent({
 
           return (
             <div
-              key={i}
+              key={u.getTime()}
               className={cn(
                 "flex items-center justify-center border-r text-[11px] text-muted-foreground w-[var(--unit-w)] h-full",
                 isToday(u) && "bg-primary/10 font-semibold text-primary",
@@ -160,8 +159,8 @@ function TimelineHeaderComponent({
               )}
               style={unitStyle}
             >
-              {timeformat && config.formatUnit(u, timeformat === '12-hour')}
-              {!timeformat && config.formatUnit(u)}
+              {timeFormat && config.formatUnit(u, timeFormat === '12-hour')}
+              {!timeFormat && config.formatUnit(u)}
             </div>
           );
         })}
@@ -170,14 +169,14 @@ function TimelineHeaderComponent({
       {/* Tier 3: weekday labels — per unit for day/month, per group for hour */}
       {showTier3 && (
         <div className="flex h-6 border-t">
-          {units.map((u, i) => {
+          {units.map((u) => {
             const weekday = WEEKDAY_SHORT[u.getDay()];
             const unitStyle = {
               "--unit-w": `${config.unitWidth}px`,
             } as CSSProperties;
             return (
               <div
-                key={i}
+                key={u.getTime()}
                 className={cn(
                   "flex items-center justify-center border-r text-[11px] text-muted-foreground w-[var(--unit-w)] h-full",
                   isToday(u) && "bg-primary/10 font-semibold text-primary",

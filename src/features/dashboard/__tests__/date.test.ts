@@ -34,6 +34,12 @@ describe('formatDate', () => {
     expect(result).toBe('08/17/2026');
   });
 
+  it('should format dates in MM.DD.YYYY format', () => {
+    const date = '2026-08-17T12:00:00';
+    const result = formatDate(date, { dateFormat: 'MM.DD.YYYY', showTime: false });
+    expect(result).toBe('08.17.2026');
+  });
+
   it('should format dates in YYYY-MM-DD format', () => {
     const date = '2026-08-17T12:00:00';
     const result = formatDate(date, { dateFormat: 'YYYY-MM-DD', showTime: false });

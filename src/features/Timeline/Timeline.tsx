@@ -97,7 +97,7 @@ export function Timeline({ containerRef }: TimelineProps) {
           showDayLabels={showDayLabels}
           headerColor={timelineHeaderColor}
           weekendColor={timelineWeekendColor}
-          timeformat={timeFormat}
+          timeFormat={timeFormat}
         />
         <div style={{ height: totalHeight, position: "relative" }}>
           <TimelineGrid

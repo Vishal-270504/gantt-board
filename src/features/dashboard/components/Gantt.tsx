@@ -16,6 +16,7 @@ import type {
   ColumnConfig,
   DisplayOptions,
   MilestoneShape,
+  GanttCustomization,
 } from "../types";
 import { useDashboardStore } from "../store/useDashboardStore";
 import { GanttStoreProvider } from "../store/GanttStoreProvider";
@@ -28,7 +29,7 @@ class GanttErrorBoundary extends React.Component<{
 }, {
   hasError: boolean;
 }> {
-  constructor(props: any) {
+  constructor(props: Readonly<{ children: React.ReactNode }>) {
     super(props);
     this.state = { hasError: false };
   }
@@ -51,9 +52,9 @@ class GanttErrorBoundary extends React.Component<{
 
 interface GanttProps {
   tasks: Task[];
-  displayOptions?: DisplayOptions;
-  columns?: ColumnConfig[];
-  styleOptions?: {
+  displayOptions: DisplayOptions | undefined;
+  columns: ColumnConfig[] | undefined;
+  styleOptions: {
     rowHeight?: number;
     ganttList?: {
       headerColor?: GanttColor;
@@ -74,8 +75,8 @@ interface GanttProps {
       weekendColor?: GanttColor;
       headerColor?: GanttColor;
     };
-  };
-  onTaskDoubleClick?: (task: Task) => void;
+  } | undefined;
+  onTaskDoubleClick: ((task: Task) => void) | undefined;
 }
 
 export function Gantt({
@@ -126,7 +127,7 @@ function GanttInner({
   useEffect(() => {
     const expandableIds = tasks.map((t) => t.id);
     expandAll(expandableIds);
-  }, [expandAll]);
+  }, [expandAll, tasks]);
 
   const { leftRef, rightRef } = useSyncedScroll();
 
@@ -149,22 +150,36 @@ function GanttInner({
       setGanttListHeaderColor(styleOptions.ganttList.headerColor);
     }
       // Consolidate all customization updates into a single call
-      const customizationUpdates: any = {
-        taskBarColor: styleOptions?.taskBar?.barColor,
-        taskBarProgressColor: styleOptions?.taskBar?.progressColor,
-        taskBarRadius: styleOptions?.taskBar?.radius,
-        projectBarColor: styleOptions?.taskBar?.projectBarColor,
-        showTitle: styleOptions?.taskBar?.showTitle,
-        timeline: {
+      const customizationUpdates: Partial<GanttCustomization> = {};
+
+      if (styleOptions?.taskBar?.barColor) {
+        customizationUpdates.taskBarColor = styleOptions.taskBar.barColor;
+      }
+      if (styleOptions?.taskBar?.progressColor) {
+        customizationUpdates.taskBarProgressColor = styleOptions.taskBar.progressColor;
+      }
+      if (styleOptions?.taskBar?.radius) {
+        customizationUpdates.taskBarRadius = styleOptions.taskBar.radius;
+      }
+      if (styleOptions?.taskBar?.projectBarColor) {
+        customizationUpdates.projectBarColor = styleOptions.taskBar.projectBarColor;
+      }
+      if (styleOptions?.taskBar?.showTitle !== undefined) {
+        customizationUpdates.showTitle = styleOptions.taskBar.showTitle;
+      }
+      if (styleOptions?.timeline || displayOptions?.showDayLabels !== undefined) {
+        customizationUpdates.timeline = {
           showDayLabels: displayOptions?.showDayLabels ?? true,
           weekendColor: styleOptions?.timeline?.weekendColor || "slate",
           todayColor: styleOptions?.timeline?.todayColor || "slate",
           headerColor: styleOptions?.timeline?.headerColor || "slate",
-        },
-        dependencyArrows: {
-          showDependencies: displayOptions?.showDependencies,
-        },
-      };
+        };
+      }
+      if (displayOptions?.showDependencies !== undefined) {
+        customizationUpdates.dependencyArrows = {
+          showDependencies: displayOptions.showDependencies,
+        };
+      }
       
       if (onTaskDoubleClick) {
         customizationUpdates.onTaskDoubleClick = onTaskDoubleClick;
@@ -294,7 +309,7 @@ function GanttInner({
             {/* <div ref={leftRef} className="h-full overflow-y-auto p-4 space-y-2">
               {Array.from({ length: 100 }, (_, i) => (
                 <div
-                  key={i}
+                  key={`placeholder-${i}`}
                   className="h-16 rounded border bg-card flex items-center px-4"
                 >
                   Box {i + 1}

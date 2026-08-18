@@ -174,7 +174,7 @@ describe('Task validation', () => {
       },
     ];
 
-    expect(() => createDashboardStore().getState().setTasks(tasks)).toThrow('invalidparentId');
+    expect(() => createDashboardStore().getState().setTasks(tasks)).toThrow('invalid parentId');
   });
 
   it('should reject missing predecessor IDs', () => {
