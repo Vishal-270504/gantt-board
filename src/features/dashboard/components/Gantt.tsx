@@ -86,15 +86,17 @@ export function Gantt({
   styleOptions,
 }: GanttProps) {
   return (
-    <GanttStoreProvider>
-      <GanttInner
-        tasks={tasks}
-        displayOptions={displayOptions}
-        columns={columns}
-        onTaskDoubleClick={onTaskDoubleClick}
-        styleOptions={styleOptions}
-      />
-    </GanttStoreProvider>
+    <GanttErrorBoundary>
+      <GanttStoreProvider>
+        <GanttInner
+          tasks={tasks}
+          displayOptions={displayOptions}
+          columns={columns}
+          onTaskDoubleClick={onTaskDoubleClick}
+          styleOptions={styleOptions}
+        />
+      </GanttStoreProvider>
+    </GanttErrorBoundary>
   );
 }
 
