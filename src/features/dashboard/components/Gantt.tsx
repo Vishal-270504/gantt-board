@@ -53,7 +53,7 @@ class GanttErrorBoundary extends React.Component<{
 interface GanttProps {
   tasks: Task[];
   displayOptions: DisplayOptions | undefined;
-  columns: ColumnConfig[] | undefined;
+  columns?: ColumnConfig[] | undefined;
   styleOptions: {
     rowHeight?: number;
     ganttList?: {
