@@ -88,12 +88,20 @@ function validateTask(task: Task, index: number): void {
   if (!task.startDate || typeof task.startDate !== 'string') {
     throw new Error(`Task at index ${index} has invalid or missing startDate`);
   }
-  toDate(task.startDate);
+  try {
+    toDate(task.startDate);
+  } catch {
+    throw new Error(`Task at index ${index} has invalid or missing startDate`);
+  }
 
   if (!task.endDate || typeof task.endDate !== 'string') {
     throw new Error(`Task at index ${index} has invalid or missing endDate`);
   }
-  toDate(task.endDate);
+  try {
+    toDate(task.endDate);
+  } catch {
+    throw new Error(`Task at index ${index} has invalid or missing endDate`);
+  }
 
   if (
     typeof task.progress !== 'number' ||
