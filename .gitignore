@@ -23,9 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 
-*storybook.log
+storybook.log
 storybook-static
-*.stories.*
+# *.stories.*
 *.story.*
 
 .agents

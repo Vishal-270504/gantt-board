@@ -15,8 +15,8 @@ interface GanttTableRowProps {
   isExpanded: boolean;
   hasChildren: boolean;
   widths: ColumnWidths;
-  columns?: ColumnConfig[];
-  onTaskDoubleClick?: (task: Task) => void;
+  columns?: ColumnConfig[] | undefined;
+  onTaskDoubleClick?: ((task: Task) => void) | undefined;
   /** Absolute positioning style injected by virtualizer */
   style?: React.CSSProperties;
 }

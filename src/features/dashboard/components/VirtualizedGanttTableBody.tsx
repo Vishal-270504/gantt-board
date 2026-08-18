@@ -17,8 +17,8 @@ interface VirtualizedGanttTableBodyProps {
   widths: ColumnWidths;
   totalWidth: number;
   containerRef: React.RefObject<HTMLDivElement | null>;
-  columns?: ColumnConfig[];
-  onTaskDoubleClick?: (task: Task) => void;
+  columns?: ColumnConfig[] | undefined;
+  onTaskDoubleClick?: ((task: Task) => void) | undefined;
 }
 
 export function VirtualizedGanttTableBody({
