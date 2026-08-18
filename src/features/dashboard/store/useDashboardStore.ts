@@ -76,55 +76,44 @@ export function computeVisibleTasks(
   return visible;
 }
 
-function validateTask(task: Task, index: number, allTasks: Task[]): void {
-  // Validate required fields
+function validateTask(task: Task, index: number): void {
   if (!task.id || typeof task.id !== 'string' || task.id.trim() === '') {
-    console.warn(`Task at index ${index} has invalid or missing id`);
+    throw new Error(`Task at index ${index} has invalid or missing id`);
   }
-  
+
   if (!task.title || typeof task.title !== 'string' || task.title.trim() === '') {
-    console.warn(`Task at index ${index} has invalid or missing title`);
+    throw new Error(`Task at index ${index} has invalid or missing title`);
   }
-  
-  // Validate dates
+
   if (!task.startDate || typeof task.startDate !== 'string') {
-    console.warn(`Task at index ${index} has invalid or missing startDate`);
-  } else {
-    try {
-      toDate(task.startDate);
-    } catch {
-      console.warn(`Task at index ${index} has invalid startDate: ${task.startDate}`);
-    }
+    throw new Error(`Task at index ${index} has invalid or missing startDate`);
   }
-  
+  toDate(task.startDate);
+
   if (!task.endDate || typeof task.endDate !== 'string') {
-    console.warn(`Task at index ${index} has invalid or missing endDate`);
-  } else {
-    try {
-      toDate(task.endDate);
-    } catch {
-      console.warn(`Task at index ${index} has invalid endDate: ${task.endDate}`);
-    }
+    throw new Error(`Task at index ${index} has invalid or missing endDate`);
   }
-  
-  // Validate progress
-  if (typeof task.progress !== 'number' || task.progress < 0 || task.progress > 100) {
-    console.warn(`Task at index ${index} has invalid progress value: ${task.progress}`);
+  toDate(task.endDate);
+
+  if (
+    typeof task.progress !== 'number' ||
+    Number.isNaN(task.progress) ||
+    task.progress < 0 ||
+    task.progress > 100
+  ) {
+    throw new Error(`Task at index ${index} has invalid progress value: ${task.progress}`);
   }
-  
-  // Validate type
+
   if (task.type && !['project', 'task', 'milestone'].includes(task.type)) {
-    console.warn(`Task at index ${index} has invalid type: ${task.type}`);
+    throw new Error(`Task at index ${index} has invalid type: ${task.type}`);
   }
-  
-  // Validate parentId
+
   if (task.parentId !== null && typeof task.parentId !== 'string') {
-    console.warn(`Task at index ${index} has invalid parentId: ${task.parentId}`);
+    throw new Error(`Task at index ${index} has invalid parentId: ${task.parentId}`);
   }
-  
-  // Validate predecessors
-  if (task.predecessors && !Array.isArray(task.predecessors)) {
-    console.warn(`Task at index ${index} has invalid predecessors: ${task.predecessors}`);
+
+  if (task.predecessors !== undefined && !Array.isArray(task.predecessors)) {
+    throw new Error(`Task at index ${index} has invalid predecessors: ${task.predecessors}`);
   }
 }
 
@@ -135,11 +124,11 @@ function hasCircularDependency(tasks: Task[]): boolean {
 
   function checkDependency(taskId: string): boolean {
     if (recursionStack.has(taskId)) {
-      return true; // Circular dependency detected
+      return true;
     }
-    
+
     if (visited.has(taskId)) {
-      return false; // Already checked, no circular dependency from here
+      return false;
     }
 
     visited.add(taskId);
@@ -167,20 +156,91 @@ function hasCircularDependency(tasks: Task[]): boolean {
   return false;
 }
 
+function hasHierarchyCycle(tasks: Task[]): boolean {
+  const taskMap = new Map<string, Task>(tasks.map(task => [task.id, task]));
+  const visited = new Set<string>();
+  const inStack = new Set<string>();
+
+  function checkParentCycle(taskId: string): boolean {
+    if (inStack.has(taskId)) {
+      return true;
+    }
+
+    if (visited.has(taskId)) {
+      return false;
+    }
+
+    visited.add(taskId);
+    inStack.add(taskId);
+
+    const task = taskMap.get(taskId);
+    if (task?.parentId !== null) {
+      if (taskMap.has(task.parentId) && checkParentCycle(task.parentId)) {
+        return true;
+      }
+    }
+
+    inStack.delete(taskId);
+    return false;
+  }
+
+  for (const task of tasks) {
+    if (checkParentCycle(task.id)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function validateTasks(tasks: Task[]): void {
   if (!Array.isArray(tasks)) {
-    console.warn('Tasks must be an array');
-    return;
+    throw new Error('Tasks must be an array');
   }
-  
-  // Check for circular dependencies
+
+  const ids = new Set<string>();
+  for (const task of tasks) {
+    if (!task?.id || typeof task.id !== 'string' || task.id.trim() === '') {
+      throw new Error('Task has invalid or missing id');
+    }
+    if (ids.has(task.id)) {
+      throw new Error(`Duplicate task ID: ${task.id}`);
+    }
+    ids.add(task.id);
+  }
+
+  const taskMap = new Map<string, Task>();
+  for (const t of tasks) {
+    taskMap.set(t.id, t);
+  }
+
+  for (const task of tasks) {
+    validateTask(task, tasks.indexOf(task));
+  }
+
+  for (const task of tasks) {
+    if (task.parentId !== null && !taskMap.has(task.parentId)) {
+      throw new Error(`Task "${task.id}" has invalidparentId: ${task.parentId}`);
+    }
+  }
+
+  for (const task of tasks) {
+    if (task.predecessors && task.predecessors.length > 0) {
+      for (const predId of task.predecessors) {
+        if (!taskMap.has(predId)) {
+          throw new Error(`Task "${task.id}" has invalid predecessor: ${predId}`);
+        }
+      }
+    }
+  }
+
+  if (hasHierarchyCycle(tasks)) {
+    throw new Error('Hierarchy cycle detected in tasks');
+  }
+
   if (hasCircularDependency(tasks)) {
-    console.warn('Circular dependency detected in tasks');
+    throw new Error('Circular dependency detected in tasks');
   }
-  
-  tasks.forEach((task, index) => {
-    validateTask(task, index, tasks);
-  });
 }
 
 export function computePositionedTasks(
