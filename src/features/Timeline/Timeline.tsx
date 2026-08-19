@@ -122,6 +122,7 @@ export function Timeline({ containerRef }: TimelineProps) {
           {showDependencies && (
             <DependencyArrows tasks={renderedRows} rowHeight={rowHeight} />
           )}
+          
           {renderedRows.map((t) => {
             if (!t) return null;
             return t.type === "milestone" ? (
