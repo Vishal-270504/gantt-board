@@ -23,19 +23,19 @@ export interface DependencyEdgeProps {
 }
 
 const STROKE_BY_STATE: Record<DependencyEdgeState, string> = {
-  default: "var(--dep-edge-stroke, #94a3b8)",
-  hovered: "var(--dep-edge-stroke-hover, #6366f1)",
-  selected: "var(--dep-edge-stroke-selected, #4338ca)",
+  default: "var(--dep-edge-stroke, #64748b)",
+  hovered: "var(--dep-edge-stroke-hover, #2563eb)",
+  selected: "var(--dep-edge-stroke-selected, #1d4ed8)",
 };
 
 const WIDTH_BY_STATE: Record<DependencyEdgeState, number> = {
   default: 1.5,
-  hovered: 2,
+  hovered: 2.25,
   selected: 2.25,
 };
 
 const OPACITY_BY_STATE: Record<DependencyEdgeState, number> = {
-  default: 0.55,
+  default: 0.85,
   hovered: 1,
   selected: 1,
 };
@@ -80,6 +80,19 @@ function DependencyEdgeImpl({
           style={{ pointerEvents: "stroke", cursor: onClick ? "pointer" : "default" }}
         />
       )}
+      {/* Halo: a slightly wider stroke in the surface color so the link stays
+          legible where it crosses a task bar or grid line — the same trick
+          Jira Plans and Smartsheet use for their dependency lines. */}
+      <path
+        d={path}
+        fill="none"
+        stroke="var(--dep-edge-halo, #ffffff)"
+        strokeWidth={WIDTH_BY_STATE[state] + 3}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={0.85}
+        pointerEvents="none"
+      />
       {/* The line the user actually sees. */}
       <path
         d={path}

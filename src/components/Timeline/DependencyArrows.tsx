@@ -1,22 +1,19 @@
 import { useCallback, useMemo, useState, type CSSProperties } from "react";
 import type { PositionedTask } from "../../features/dashboard/types";
-import {
-  routeDependencies,
-  type DepConnector,
-  type DepRect,
-  type DepPoint,
-} from "../ui/dependencyRouter";
-import { shapeOrthogonalRoute } from "../ui/routeShaping";
+import type { DepRect, DepPoint } from "../ui/dependencyRouter";
+import { routeGanttLink } from "./ganttLinkRoute";
 import { DependencyEdge, type DependencyEdgeState } from "./DependencyEdge";
 import { toRoundedPath } from "./EdgePath";
+import { withApproachStubs } from "./edgeStubs";
 
 // ── Visual constants ──────────────────────────────────────────────────────
 // (Routing constants — bar geometry, arrow gap, etc. — are unchanged from
 // the original implementation; only rendering constants live here.)
-const ARROW_LEN = 12;
-const ARROW_GAP = 6;
+const ARROW_GAP = 3;
 const PADDING = 16;
-const CORNER_RADIUS = 8;
+const CORNER_RADIUS = 6;
+const EXIT_STUB = 14;
+const ENTRY_STUB = 18;
 
 // Geometry constants that match Taskbar.tsx
 const BAR_LEFT_OFFSET = 17;
@@ -26,13 +23,14 @@ const BAR_HEIGHT_OFFSET = 8;
 const TITLE_GAP = 8;
 const CHAR_WIDTH = 7;
 const BAR_PADDING = 16;
+const MILESTONE_SIZE = 14;
 
 // Colors mirrored 1:1 with the CSS variables read by DependencyEdge.tsx, so
 // the <marker> fills (which can't reliably read CSS vars for `fill` across
 // browsers) always match the stroke of the path they're attached to.
-const COLOR_DEFAULT = "#505760"; // slate-400
-const COLOR_HOVER = "#6062ff"; // indigo-500
-const COLOR_SELECTED = "#4338ca"; // indigo-700
+const COLOR_DEFAULT = "#64748b"; // slate-500 — neutral, reads over any bar color
+const COLOR_HOVER = "#2563eb"; // blue-600
+const COLOR_SELECTED = "#1d4ed8"; // blue-700
 
 const MARKER_ID_DEFAULT = "dep-arrow-default";
 const MARKER_ID_HOVER = "dep-arrow-hover";
@@ -115,15 +113,15 @@ function ArrowMarkerDefs() {
         <marker
           key={id}
           id={id}
-          viewBox="-10 -10 20 20"
-          refX="-1"
-          refY="0"
-          markerWidth="9"
-          markerHeight="9"
-          markerUnits="strokeWidth"
+          viewBox="0 0 10 10"
+          refX="6"
+          refY="5"
+          markerWidth="10"
+          markerHeight="10"
+          markerUnits="userSpaceOnUse"
           orient="auto-start-reverse"
         >
-          <path d="M -8,-6 L 1,0 L -8,6 Z" fill={color} stroke="none" />
+          <path d="M 0.5,0.8 L 9.2,5 L 0.5,9.2 Z" fill={color} stroke="none" strokeLinejoin="round" />
         </marker>
       ))}
     </defs>
@@ -162,17 +160,15 @@ export function DependencyArrows({
     [selectedKey, setSelectedKey],
   );
 
-  // Obstacles, connectors, and the routed points themselves are exactly the
-  // same computation as before — memoized so hundreds of edges don't get
-  // re-routed on every render (e.g. on hover state changes elsewhere).
+  // Routes are deterministic elbows (see ganttLinkRoute.ts) — memoized so
+  // hundreds of edges don't get re-routed on hover/selection changes.
   const { keys, adjustedRoutes } = useMemo(() => {
     if (!tasks.length) return { keys: [] as string[], adjustedRoutes: [] as DepPoint[][] };
 
     const taskMap = new Map<string, PositionedTask>();
     tasks.forEach((t) => taskMap.set(t.id, t));
 
-    const obstacles: DepRect[] = tasks.map(getContentRect);
-    const connectors: DepConnector[] = [];
+    const routes: DepPoint[][] = [];
     const localKeys: string[] = [];
 
     tasks.forEach((successor) => {
@@ -188,29 +184,35 @@ export function DependencyArrows({
         const isPredMilestone = pred.type === "milestone" || pred.width === 0;
         const isSuccMilestone = successor.type === "milestone" || successor.width === 0;
 
-        const sourceBaseX = isPredMilestone ? pred.left : predRect.x + predRect.w;
+        const sourceBaseX = isPredMilestone ? pred.left + MILESTONE_SIZE + 1.80 : predRect.x + predRect.w;
         const sourceY = pred.top + rowHeight / 2;
 
         const targetBaseX = isSuccMilestone ? successor.left : succRect.x;
         const targetY = successor.top + rowHeight / 2;
 
-        const adjustedTargetX = targetBaseX - ARROW_LEN - ARROW_GAP;
+        // The arrowhead tip sits on the last point, so stop just shy of the milestone.
+        const adjustedTargetX = isSuccMilestone ? targetBaseX - MILESTONE_SIZE / 2.80 : targetBaseX - ARROW_GAP;
 
-        connectors.push({
-          from: { x: sourceBaseX, y: sourceY },
-          to: { x: adjustedTargetX, y: targetY },
-        });
+        routes.push(
+          routeGanttLink(
+            { x: sourceBaseX, y: sourceY },
+            { x: adjustedTargetX, y: targetY },
+            { rowHeight, exitStub: EXIT_STUB, entryStub: ENTRY_STUB },
+          ),
+        );
         localKeys.push(`${pred.id}->${successor.id}`);
       });
     });
 
-    if (connectors.length === 0) return { keys: [] as string[], adjustedRoutes: [] as DepPoint[][] };
+    if (routes.length === 0) return { keys: [] as string[], adjustedRoutes: [] as DepPoint[][] };
 
-    const routes = routeDependencies(connectors, obstacles, rowHeight);
-    const shaped = routes.map((route) => shapeOrthogonalRoute(route, obstacles));
+    const shaped = routes.map((route) =>
+      withApproachStubs(route, { exit: EXIT_STUB, entry: ENTRY_STUB }),
+    );
 
     return { keys: localKeys, adjustedRoutes: shaped };
   }, [tasks, rowHeight]);
+
 
   // Presentation-only step: turn each routed polyline into a rounded path
   // string. Purely a rendering concern — the underlying points never change.
